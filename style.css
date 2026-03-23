@@ -370,6 +370,19 @@ body {
 /* ===== PFC入力グリッド ===== */
 .pfc-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 
+/* ===== フッター ===== */
+.site-footer {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.site-footer a { color: var(--muted); text-decoration: none; }
+.site-footer a:hover { text-decoration: underline; }
+
 /* ===== 画面ヘッダー ===== */
 .screen-header {
   display: flex;
