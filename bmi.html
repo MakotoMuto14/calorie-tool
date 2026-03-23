@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BMI計算ツール | 適正体重・肥満度を無料チェック</title>
+  <meta name="description" content="身長と体重を入力するだけでBMIと肥満度を瞬時に計算。適正体重・目標体重の目安もわかる無料ツール。" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .bmi-result-card {
+      text-align: center;
+      padding: 32px 20px;
+    }
+    .bmi-value {
+      font-size: 4rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .bmi-label {
+      font-size: 1.3rem;
+      font-weight: 700;
+      padding: 6px 20px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    .bmi-label.thin    { background: #e3f2fd; color: #1565c0; }
+    .bmi-label.normal  { background: #e8f5e9; color: #2e7d32; }
+    .bmi-label.fat1    { background: #fff3e0; color: #e65100; }
+    .bmi-label.fat2    { background: #fbe9e7; color: #bf360c; }
+    .bmi-label.fat3    { background: #ffebee; color: #b71c1c; }
+
+    .bmi-gauge {
+      position: relative;
+      height: 16px;
+      border-radius: 999px;
+      background: linear-gradient(to right, #64b5f6, #81c784, #ffb74d, #e57373, #c62828);
+      margin: 0 0 8px;
+      overflow: visible;
+    }
+    .bmi-gauge-marker {
+      position: absolute;
+      top: -6px;
+      width: 4px;
+      height: 28px;
+      background: #1a1a1a;
+      border-radius: 2px;
+      transform: translateX(-50%);
+      transition: left 0.5s ease;
+    }
+    .bmi-gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: #777;
+      margin-bottom: 20px;
+    }
+
+    .weight-table { width: 100%; border-collapse: collapse; }
+    .weight-table th, .weight-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.9rem;
+    }
+    .weight-table th { font-weight: 700; color: #777; font-size: 0.8rem; }
+    .weight-table tr:last-child td { border-bottom: none; }
+    .weight-table .highlight td { font-weight: 700; color: #4CAF50; background: #f0faf0; }
+
+    .hidden { display: none; }
+    .page-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
+    .page-desc { color: #777; font-size: 0.9rem; margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <div style="max-width:480px;margin:0 auto;padding:16px;">
+
+    <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <a href="/" style="color:#4CAF50;font-weight:700;text-decoration:none;">← カロリー管理</a>
+    </header>
+
+    <div class="card">
+      <h1 class="page-title">📊 BMI計算ツール</h1>
+      <p class="page-desc">身長・体重を入力してBMIと肥満度をチェック</p>
+
+      <div class="form-group">
+        <label>性別</label>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="bmi-gender" value="male" checked /> 男性</label>
+          <label class="radio-label"><input type="radio" name="bmi-gender" value="female" /> 女性</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="bmi-height">身長</label>
+        <div class="input-unit">
+          <input type="number" id="bmi-height" placeholder="170" min="100" max="250" oninput="calcBMI()" />
+          <span>cm</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="bmi-weight">体重</label>
+        <div class="input-unit">
+          <input type="number" id="bmi-weight" placeholder="70" min="20" max="300" step="0.1" oninput="calcBMI()" />
+          <span>kg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 結果カード -->
+    <div class="card bmi-result-card hidden" id="result-card">
+      <div class="bmi-value" id="bmi-num">--</div>
+      <div class="bmi-label" id="bmi-label">--</div>
+
+      <div class="bmi-gauge">
+        <div class="bmi-gauge-marker" id="gauge-marker"></div>
+      </div>
+      <div class="bmi-gauge-labels">
+        <span>低体重</span>
+        <span>普通</span>
+        <span>肥満1</span>
+        <span>肥満2+</span>
+      </div>
+    </div>
+
+    <!-- 適正体重テーブル -->
+    <div class="card hidden" id="table-card">
+      <h2 class="section-title">体重の目安</h2>
+      <table class="weight-table">
+        <thead>
+          <tr><th>区分</th><th>BMI</th><th>体重</th></tr>
+        </thead>
+        <tbody id="weight-table-body"></tbody>
+      </table>
+    </div>
+
+    <!-- アドバイス -->
+    <div class="card hidden" id="advice-card">
+      <h2 class="section-title">アドバイス</h2>
+      <p id="advice-text" style="font-size:0.95rem;line-height:1.8;color:#333;"></p>
+      <div style="margin-top:16px;">
+        <a href="/" class="btn-primary" style="display:block;text-align:center;text-decoration:none;">カロリー管理ツールで目標達成 →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="site-footer">
+    <a href="/privacy.html">プライバシーポリシー</a>
+    <span>© 2026 life-calc14.com</span>
+  </footer>
+
+  <script>
+    const BMI_CATEGORIES = [
+      { label: '低体重（痩せ）', min: 0,    max: 18.5, cls: 'thin',   advice: '体重がやや少ない状態です。筋肉量が少ないと免疫力の低下や疲れやすさにつながることがあります。タンパク質を意識した食事と適度な筋トレを取り入れましょう。' },
+      { label: '普通体重',       min: 18.5, max: 25,   cls: 'normal', advice: '理想的な体重範囲です。この状態を維持するために、バランスの良い食事と適度な運動を続けましょう。' },
+      { label: '肥満（1度）',    min: 25,   max: 30,   cls: 'fat1',   advice: 'やや肥満の状態です。生活習慣病のリスクが少し高まっています。食事のカロリーを見直し、1日30分程度のウォーキングから始めてみましょう。' },
+      { label: '肥満（2度）',    min: 30,   max: 35,   cls: 'fat2',   advice: '肥満の状態です。高血圧・糖尿病・脂質異常症などのリスクが高まっています。カロリー管理と定期的な運動が重要です。' },
+      { label: '肥満（3度以上）',min: 35,   max: 999,  cls: 'fat3',   advice: '高度肥満の状態です。様々な生活習慣病のリスクが高く、医師への相談をおすすめします。食事管理と運動療法を専門家の指導のもとで行いましょう。' },
+    ];
+
+    function calcBMI() {
+      const h = parseFloat(document.getElementById('bmi-height').value);
+      const w = parseFloat(document.getElementById('bmi-weight').value);
+      if (!h || !w || h < 100 || w < 20) return;
+
+      const hm = h / 100;
+      const bmi = w / (hm * hm);
+      const cat = BMI_CATEGORIES.find(c => bmi >= c.min && bmi < c.max);
+
+      // 結果表示
+      document.getElementById('bmi-num').textContent = bmi.toFixed(1);
+      const labelEl = document.getElementById('bmi-label');
+      labelEl.textContent = cat.label;
+      labelEl.className = 'bmi-label ' + cat.cls;
+
+      // ゲージ（BMI 15〜40の範囲で表示）
+      const pct = Math.min(Math.max((bmi - 15) / (40 - 15) * 100, 2), 98);
+      document.getElementById('gauge-marker').style.left = pct + '%';
+
+      // テーブル
+      const tableRows = [
+        { label: '低体重',      bmi: '〜18.4', weight: (18.4 * hm * hm).toFixed(1) + 'kg未満' },
+        { label: '普通体重',    bmi: '18.5〜24.9', weight: (18.5 * hm * hm).toFixed(1) + '〜' + (24.9 * hm * hm).toFixed(1) + 'kg', current: bmi >= 18.5 && bmi < 25 },
+        { label: '適正体重',    bmi: '22.0',   weight: (22 * hm * hm).toFixed(1) + 'kg', ideal: true },
+        { label: '肥満（1度）', bmi: '25〜29.9', weight: (25 * hm * hm).toFixed(1) + '〜' + (29.9 * hm * hm).toFixed(1) + 'kg' },
+        { label: '肥満（2度+）',bmi: '30以上',  weight: (30 * hm * hm).toFixed(1) + 'kg以上' },
+      ];
+
+      document.getElementById('weight-table-body').innerHTML = tableRows.map(r => `
+        <tr class="${r.ideal ? 'highlight' : ''}">
+          <td>${r.label}${r.ideal ? ' ⭐' : ''}</td>
+          <td>${r.bmi}</td>
+          <td>${r.weight}</td>
+        </tr>
+      `).join('');
+
+      // アドバイス
+      document.getElementById('advice-text').textContent = cat.advice;
+
+      // 表示
+      ['result-card', 'table-card', 'advice-card'].forEach(id => {
+        document.getElementById(id).classList.remove('hidden');
+      });
+    }
+  </script>
+</body>
+</html>
