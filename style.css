@@ -1,0 +1,380 @@
+/* ===== リセット・基本 ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #4CAF50;
+  --primary-dark: #388E3C;
+  --danger: #F44336;
+  --warning: #FF9800;
+  --bg: #f0f4f0;
+  --card: #ffffff;
+  --text: #1a1a1a;
+  --muted: #777;
+  --border: #e0e0e0;
+  --protein: #3b82f6;
+  --fat: #f59e0b;
+  --carb: #10b981;
+  --radius: 16px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+/* ===== スクリーン切り替え ===== */
+.screen { display: none; max-width: 480px; margin: 0 auto; padding: 16px; }
+.screen.active { display: block; }
+
+/* ===== カード ===== */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+/* ===== ロゴ ===== */
+.logo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.sub {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+.logo-small {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* ===== ヘッダー ===== */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 16px 0;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* ===== 日付ナビ ===== */
+.date-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0 4px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+.date-nav button {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: var(--primary);
+  line-height: 1;
+  padding: 0 4px;
+}
+
+/* ===== フォーム ===== */
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  background: #fafafa;
+  color: var(--text);
+}
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: #fff;
+}
+.input-unit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.input-unit input { flex: 1; }
+.input-unit span { color: var(--muted); font-size: 0.95rem; white-space: nowrap; }
+
+.radio-group { display: flex; gap: 16px; padding-top: 4px; }
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.radio-label input { accent-color: var(--primary); width: 16px; height: 16px; }
+
+/* ===== ボタン ===== */
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-add {
+  width: 100%;
+  padding: 12px;
+  background: none;
+  border: 2px dashed var(--primary);
+  border-radius: 12px;
+  color: var(--primary);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+.btn-add:hover { background: #f0faf0; }
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ===== カロリーリング ===== */
+.summary-card { text-align: center; }
+
+.calorie-ring-wrapper {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 20px;
+}
+.calorie-ring { transform: rotate(-90deg); }
+.ring-bg {
+  fill: none;
+  stroke: #e8f5e9;
+  stroke-width: 12;
+}
+.ring-fill {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 12;
+  stroke-linecap: round;
+  stroke-dasharray: 314;
+  stroke-dashoffset: 314;
+  transition: stroke-dashoffset 0.6s ease, stroke 0.3s;
+}
+.ring-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.ring-main {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.ring-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.calorie-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 16px;
+}
+.stat { text-align: center; }
+.stat-label { font-size: 0.75rem; color: var(--muted); }
+.stat-value { font-size: 1.1rem; font-weight: 700; margin-top: 2px; }
+
+.calorie-message {
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: none;
+}
+.calorie-message.ok { background: #e8f5e9; color: #2e7d32; display: block; }
+.calorie-message.warn { background: #fff3e0; color: #e65100; display: block; }
+.calorie-message.over { background: #ffebee; color: #c62828; display: block; }
+
+/* ===== PFCバー ===== */
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+.pfc-bars { display: flex; flex-direction: column; gap: 12px; }
+.pfc-item { display: flex; align-items: center; gap: 10px; }
+.pfc-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  width: 80px;
+  flex-shrink: 0;
+}
+.pfc-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pfc-dot.protein { background: var(--protein); }
+.pfc-dot.fat { background: var(--fat); }
+.pfc-dot.carb { background: var(--carb); }
+
+.pfc-bar-wrap {
+  flex: 1;
+  background: #f0f0f0;
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+}
+.pfc-bar {
+  height: 100%;
+  border-radius: 999px;
+  width: 0%;
+  transition: width 0.5s ease;
+}
+.protein-bar { background: var(--protein); }
+.fat-bar { background: var(--fat); }
+.carb-bar { background: var(--carb); }
+.pfc-value { font-size: 0.85rem; font-weight: 600; width: 36px; text-align: right; }
+
+/* ===== 目標カード ===== */
+.goal-stats {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+}
+.goal-value { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+.goal-label { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+/* ===== 食事リスト ===== */
+.meal-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
+.meal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: #f8fdf8;
+  border-radius: 10px;
+  border: 1px solid #e8f5e9;
+}
+.meal-info { flex: 1; }
+.meal-name-text { font-weight: 600; font-size: 0.95rem; }
+.meal-timing-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: white;
+  margin-left: 6px;
+  font-weight: 600;
+}
+.meal-pfc { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
+.meal-kcal { font-weight: 800; font-size: 1rem; color: var(--primary); white-space: nowrap; }
+.meal-delete {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0 0 0 10px;
+  transition: color 0.2s;
+}
+.meal-delete:hover { color: var(--danger); }
+
+.no-meal {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 20px 0;
+}
+
+/* ===== クイック食品 ===== */
+.quick-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.quick-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.quick-btn {
+  padding: 6px 12px;
+  background: #f0faf0;
+  border: 1.5px solid var(--primary);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.quick-btn:hover { background: var(--primary); color: white; }
+
+/* ===== PFC入力グリッド ===== */
+.pfc-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+/* ===== 画面ヘッダー ===== */
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.screen-header h2 { font-size: 1.1rem; }

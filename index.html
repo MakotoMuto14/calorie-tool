@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>カロリー管理ツール | 目標体重まで賢く食べる</title>
+  <meta name="description" content="身長・体重・目標を入力するだけで、今日食べていいカロリーをリアルタイム管理。PFCバランスも確認できる無料ツール。" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========== プロフィール設定画面 ========== -->
+  <div id="screen-profile" class="screen active">
+    <div class="card">
+      <h1 class="logo">🥗 カロリー管理</h1>
+      <p class="sub">あなたの情報を入力してください</p>
+
+      <div class="form-group">
+        <label>性別</label>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="gender" value="male" checked /> 男性</label>
+          <label class="radio-label"><input type="radio" name="gender" value="female" /> 女性</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="age">年齢</label>
+        <div class="input-unit"><input type="number" id="age" placeholder="25" min="10" max="100" /><span>歳</span></div>
+      </div>
+
+      <div class="form-group">
+        <label for="height">身長</label>
+        <div class="input-unit"><input type="number" id="height" placeholder="170" min="100" max="250" /><span>cm</span></div>
+      </div>
+
+      <div class="form-group">
+        <label for="weight">現在の体重</label>
+        <div class="input-unit"><input type="number" id="weight" placeholder="70" min="20" max="300" step="0.1" /><span>kg</span></div>
+      </div>
+
+      <div class="form-group">
+        <label for="target-weight">目標体重</label>
+        <div class="input-unit"><input type="number" id="target-weight" placeholder="65" min="20" max="300" step="0.1" /><span>kg</span></div>
+      </div>
+
+      <div class="form-group">
+        <label for="activity">活動量</label>
+        <select id="activity">
+          <option value="1.2">ほぼ動かない（デスクワーク中心）</option>
+          <option value="1.375">軽い運動（週1〜2回）</option>
+          <option value="1.55" selected>適度な運動（週3〜5回）</option>
+          <option value="1.725">激しい運動（週6〜7回）</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="loss-speed">減量ペース</label>
+        <select id="loss-speed">
+          <option value="250">ゆっくり（月約1kg）</option>
+          <option value="500" selected>標準（月約2kg）</option>
+          <option value="750">速め（月約3kg）</option>
+        </select>
+      </div>
+
+      <button class="btn-primary" onclick="saveProfile()">はじめる</button>
+    </div>
+  </div>
+
+  <!-- ========== メイン画面 ========== -->
+  <div id="screen-main" class="screen">
+
+    <header class="app-header">
+      <h1 class="logo-small">🥗 カロリー管理</h1>
+      <button class="btn-icon" onclick="showScreen('screen-profile')" title="プロフィール編集">⚙️</button>
+    </header>
+
+    <!-- 日付ナビ -->
+    <div class="date-nav">
+      <button onclick="changeDate(-1)">‹</button>
+      <span id="display-date"></span>
+      <button onclick="changeDate(1)">›</button>
+    </div>
+
+    <!-- カロリーサマリー -->
+    <div class="card summary-card">
+      <div class="calorie-ring-wrapper">
+        <svg class="calorie-ring" viewBox="0 0 120 120">
+          <circle class="ring-bg" cx="60" cy="60" r="50" />
+          <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="50" />
+        </svg>
+        <div class="ring-text">
+          <div id="remaining-kcal" class="ring-main">--</div>
+          <div class="ring-label">残りkcal</div>
+        </div>
+      </div>
+
+      <div class="calorie-stats">
+        <div class="stat">
+          <div class="stat-label">目標</div>
+          <div class="stat-value" id="stat-target">--</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">摂取済み</div>
+          <div class="stat-value" id="stat-consumed">--</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">残り</div>
+          <div class="stat-value" id="stat-remaining">--</div>
+        </div>
+      </div>
+
+      <div id="calorie-message" class="calorie-message"></div>
+    </div>
+
+    <!-- PFCバランス -->
+    <div class="card">
+      <h2 class="section-title">PFCバランス</h2>
+      <div class="pfc-bars">
+        <div class="pfc-item">
+          <div class="pfc-label"><span class="pfc-dot protein"></span>タンパク質</div>
+          <div class="pfc-bar-wrap"><div class="pfc-bar protein-bar" id="bar-p"></div></div>
+          <div class="pfc-value" id="val-p">0g</div>
+        </div>
+        <div class="pfc-item">
+          <div class="pfc-label"><span class="pfc-dot fat"></span>脂質</div>
+          <div class="pfc-bar-wrap"><div class="pfc-bar fat-bar" id="bar-f"></div></div>
+          <div class="pfc-value" id="val-f">0g</div>
+        </div>
+        <div class="pfc-item">
+          <div class="pfc-label"><span class="pfc-dot carb"></span>炭水化物</div>
+          <div class="pfc-bar-wrap"><div class="pfc-bar carb-bar" id="bar-c"></div></div>
+          <div class="pfc-value" id="val-c">0g</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 目標まであと -->
+    <div class="card goal-card">
+      <h2 class="section-title">目標まで</h2>
+      <div class="goal-stats">
+        <div class="goal-item">
+          <div class="goal-value" id="goal-diff">--</div>
+          <div class="goal-label">あと何kg</div>
+        </div>
+        <div class="goal-item">
+          <div class="goal-value" id="goal-days">--</div>
+          <div class="goal-label">達成予想日数</div>
+        </div>
+        <div class="goal-item">
+          <div class="goal-value" id="goal-date">--</div>
+          <div class="goal-label">達成予想日</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 食事ログ -->
+    <div class="card">
+      <h2 class="section-title">今日の食事</h2>
+      <div id="meal-list" class="meal-list"></div>
+      <button class="btn-add" onclick="showScreen('screen-add')">＋ 食事を追加</button>
+    </div>
+
+  </div>
+
+  <!-- ========== 食事追加画面 ========== -->
+  <div id="screen-add" class="screen">
+    <div class="card">
+      <div class="screen-header">
+        <button class="btn-back" onclick="showScreen('screen-main')">← 戻る</button>
+        <h2>食事を追加</h2>
+      </div>
+
+      <div class="form-group">
+        <label for="meal-name">食事名</label>
+        <input type="text" id="meal-name" placeholder="例：ご飯150g、鶏むね肉100g" />
+      </div>
+
+      <div class="quick-foods">
+        <p class="quick-label">よく使う食品（タップで自動入力）</p>
+        <div class="quick-grid" id="quick-grid"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="meal-kcal">カロリー（kcal）</label>
+        <input type="number" id="meal-kcal" placeholder="例：300" min="0" />
+      </div>
+
+      <div class="pfc-inputs">
+        <div class="form-group">
+          <label for="meal-p">タンパク質（g）</label>
+          <input type="number" id="meal-p" placeholder="0" min="0" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label for="meal-f">脂質（g）</label>
+          <input type="number" id="meal-f" placeholder="0" min="0" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label for="meal-c">炭水化物（g）</label>
+          <input type="number" id="meal-c" placeholder="0" min="0" step="0.1" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="meal-timing">食事タイミング</label>
+        <select id="meal-timing">
+          <option value="朝食">朝食</option>
+          <option value="昼食" selected>昼食</option>
+          <option value="夕食">夕食</option>
+          <option value="間食">間食</option>
+        </select>
+      </div>
+
+      <button class="btn-primary" onclick="addMeal()">追加する</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
