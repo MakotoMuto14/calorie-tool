@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>深夜の研究所〜LOCKDOWN〜 | 無料ブラウザ脱出ゲーム</title>
+  <meta name="description" content="謎を解いて研究所から脱出せよ！全10問の本格ブラウザ脱出ゲーム。オンラインランキングで世界と競え！">
+  <!-- Google Analytics G-09VDQ8K3P7 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-09VDQ8K3P7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-09VDQ8K3P7');
+  </script>
+  <!-- AdSense placeholder -->
+  <!-- Firebase CDN (HTTPS必須。ローカルのfile://プロトコルでは動作しない場合があります) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --bg2: #0f1628;
+      --bg3: #141c35;
+      --text: #e0e8ff;
+      --text-muted: #8898cc;
+      --accent: #00d4ff;
+      --green: #00ff88;
+      --red: #ff3355;
+      --yellow: #ffcc00;
+      --border: #1e2d55;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    /* ---- SCREENS ---- */
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: 600px;
+      padding: 20px;
+      animation: fadeIn 0.4s ease;
+    }
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---- TITLE SCREEN ---- */
+    #screen-title {
+      text-align: center;
+      gap: 20px;
+    }
+
+    .title-badge {
+      background: var(--accent);
+      color: var(--bg);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 4px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    .title-main {
+      font-size: clamp(1.8rem, 6vw, 2.8rem);
+      font-weight: 900;
+      line-height: 1.2;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      text-shadow: 0 0 30px rgba(0,212,255,0.4);
+    }
+    .title-main span {
+      color: var(--accent);
+    }
+
+    .title-subtitle {
+      font-size: 1rem;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+    }
+
+    .title-story {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      padding: 18px 20px;
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: var(--text-muted);
+      text-align: left;
+      width: 100%;
+    }
+
+    .title-info {
+      display: flex;
+      gap: 20px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .title-info span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ---- NAME SCREEN ---- */
+    #screen-name {
+      gap: 24px;
+      text-align: center;
+    }
+
+    .name-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .name-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* ---- GAME SCREEN ---- */
+    #screen-game {
+      gap: 0;
+      padding: 0;
+      align-items: stretch;
+    }
+
+    .game-header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .game-header-logo {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+    }
+
+    .game-stage-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .game-timer {
+      font-size: 1rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--yellow);
+      min-width: 52px;
+      text-align: right;
+    }
+
+    .progress-bar-wrap {
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+    }
+    .progress-bar-fill {
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      transition: width 0.4s ease;
+    }
+
+    .game-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .location-label {
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .location-label::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .scene-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      font-size: 0.9rem;
+      line-height: 1.9;
+      color: var(--text-muted);
+    }
+    .scene-box strong {
+      color: var(--yellow);
+      font-weight: 700;
+    }
+
+    .question-box {
+      background: var(--bg3);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      padding: 18px;
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* ---- INPUTS ---- */
+    input[type="text"] {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 1rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,212,255,0.15);
+    }
+    input[type="text"]::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* ---- BUTTONS ---- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 24px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #0099cc);
+      color: var(--bg);
+      width: 100%;
+      box-shadow: 0 4px 20px rgba(0,212,255,0.3);
+    }
+    .btn-primary:hover { box-shadow: 0 6px 28px rgba(0,212,255,0.45); }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 100%;
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-answer {
+      background: linear-gradient(135deg, var(--green), #00cc66);
+      color: var(--bg);
+      padding: 13px 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(0,255,136,0.25);
+    }
+
+    .btn-hint {
+      background: transparent;
+      border: 1px solid var(--yellow);
+      color: var(--yellow);
+      font-size: 0.8rem;
+      padding: 8px 16px;
+    }
+    .btn-hint:hover { background: rgba(255,204,0,0.1); }
+
+    .btn-share-x {
+      background: #000;
+      color: #fff;
+      border: 1px solid #333;
+    }
+    .btn-share-line {
+      background: #06c755;
+      color: #fff;
+    }
+    .btn-share-copy {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .btn-rank {
+      background: transparent;
+      border: 1px solid var(--yellow);
+      color: var(--yellow);
+      padding: 10px 20px;
+      font-size: 0.85rem;
+    }
+    .btn-rank:hover { background: rgba(255,204,0,0.1); }
+
+    /* ---- HINT BOX ---- */
+    .hint-box {
+      background: rgba(255,204,0,0.08);
+      border: 1px solid rgba(255,204,0,0.3);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: var(--yellow);
+      display: none;
+    }
+    .hint-box.visible { display: block; }
+
+    /* ---- FEEDBACK ---- */
+    .feedback {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+      display: none;
+    }
+    .feedback.correct {
+      display: block;
+      background: rgba(0,255,136,0.12);
+      border: 1px solid var(--green);
+      color: var(--green);
+      animation: glowGreen 0.5s ease;
+    }
+    .feedback.wrong {
+      display: block;
+      background: rgba(255,51,85,0.12);
+      border: 1px solid var(--red);
+      color: var(--red);
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes glowGreen {
+      0%   { box-shadow: 0 0 0 rgba(0,255,136,0); }
+      50%  { box-shadow: 0 0 20px rgba(0,255,136,0.5); }
+      100% { box-shadow: 0 0 0 rgba(0,255,136,0); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%  { transform: translateX(-8px); }
+      40%  { transform: translateX(8px); }
+      60%  { transform: translateX(-6px); }
+      80%  { transform: translateX(6px); }
+    }
+
+    /* ---- CLEAR SCREEN ---- */
+    #screen-clear {
+      gap: 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .clear-title {
+      font-size: clamp(1.8rem, 6vw, 2.5rem);
+      font-weight: 900;
+      color: var(--green);
+      text-shadow: 0 0 30px rgba(0,255,136,0.5);
+    }
+
+    .clear-subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .clear-info {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .clear-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.95rem;
+    }
+    .clear-info-row .label { color: var(--text-muted); }
+    .clear-info-row .value {
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 1.1rem;
+    }
+
+    .clear-time-big {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--yellow);
+      text-shadow: 0 0 20px rgba(255,204,0,0.4);
+    }
+
+    .share-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+    .share-row .btn { flex: 1; padding: 11px 8px; font-size: 0.8rem; }
+
+    .copy-msg {
+      font-size: 0.8rem;
+      color: var(--green);
+      height: 18px;
+    }
+
+    /* ---- RANKING ---- */
+    .ranking-section {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .ranking-section h3 {
+      font-size: 0.95rem;
+      color: var(--accent);
+      margin-bottom: 14px;
+      letter-spacing: 0.08em;
+    }
+
+    .ranking-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      background: var(--bg3);
+    }
+    .ranking-item.rank-1 { border-left: 3px solid #ffd700; }
+    .ranking-item.rank-2 { border-left: 3px solid #c0c0c0; }
+    .ranking-item.rank-3 { border-left: 3px solid #cd7f32; }
+
+    .rank-icon { width: 22px; text-align: center; font-size: 1.1rem; flex-shrink: 0; }
+    .rank-num  { width: 22px; text-align: center; color: var(--text-muted); font-size: 0.8rem; flex-shrink: 0; }
+    .rank-name { flex: 1; color: var(--text); font-weight: 600; }
+    .rank-time { color: var(--yellow); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+    .ranking-empty {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    .rank-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      padding: 12px 0;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ---- MODAL ---- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      width: 100%;
+      max-width: 460px;
+      max-height: 80vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header h2 {
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+    .modal-close {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 5px 12px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .modal-close:hover { border-color: var(--red); color: var(--red); }
+
+    /* ---- PARTICLES ---- */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      animation: particleFall linear forwards;
+    }
+    @keyframes particleFall {
+      0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 480px) {
+      .game-header { padding: 10px 14px; }
+      .game-body { padding: 14px; gap: 12px; }
+      .share-row { flex-direction: column; }
+      .share-row .btn { flex: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ======== TITLE SCREEN ======== -->
+<div id="screen-title" class="screen active">
+  <span class="title-badge">Browser Escape Game</span>
+  <h1 class="title-main">深夜の研究所<br><span>〜LOCKDOWN〜</span></h1>
+  <p class="title-subtitle">STAGE 1 ─ 10</p>
+  <div class="title-story">
+    深夜2時。緊急アラームが鳴り響き、研究所の全ドアがロックされた。<br>
+    非常電源だけが点滅する薄暗い施設の中、あなたは一人取り残されている。<br>
+    10の謎を解き、この研究所から脱出せよ。
+  </div>
+  <div class="title-info">
+    <span>🧩 全10問</span>
+    <span>⏱ タイム計測</span>
+    <span>🏆 オンラインランキング</span>
+  </div>
+  <button class="btn btn-rank" onclick="openRankingModal()">🏆 ランキングを見る</button>
+  <button class="btn btn-primary" onclick="showScreen('screen-name')">ゲームスタート</button>
+</div>
+
+<!-- ======== NAME SCREEN ======== -->
+<div id="screen-name" class="screen">
+  <p class="name-title">🔒 プレイヤー名を入力</p>
+  <p class="name-desc">クリア後にランキングへ登録されます（最大10文字）</p>
+  <input type="text" id="player-name-input" maxlength="10" placeholder="例: 山田太郎">
+  <button class="btn btn-primary" onclick="startGame()">スタート！</button>
+  <button class="btn btn-secondary" onclick="showScreen('screen-title')">← 戻る</button>
+</div>
+
+<!-- ======== GAME SCREEN ======== -->
+<div id="screen-game" class="screen">
+  <header class="game-header">
+    <span class="game-header-logo">🔒 LOCKDOWN</span>
+    <span class="game-stage-label" id="stage-label">ステージ 1/10</span>
+    <span class="game-timer" id="timer-display">00:00</span>
+  </header>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+  <div class="game-body">
+    <div class="location-label" id="location-label">入口ホール</div>
+    <div class="scene-box" id="scene-text"></div>
+    <div class="question-box" id="question-text"></div>
+    <div class="input-row">
+      <input type="text" id="answer-input" placeholder="答えを入力..." autocomplete="off">
+      <button class="btn btn-answer" onclick="checkAnswer()">解答</button>
+    </div>
+    <div class="feedback" id="feedback-msg"></div>
+    <button class="btn btn-hint" id="hint-btn" onclick="toggleHint()">💡 ヒントを見る</button>
+    <div class="hint-box" id="hint-box"></div>
+  </div>
+</div>
+
+<!-- ======== CLEAR SCREEN ======== -->
+<div id="screen-clear" class="screen">
+  <div class="particles" id="particles"></div>
+  <div class="clear-title">🎉 脱出成功！</div>
+  <p class="clear-subtitle">研究所からの脱出おめでとうございます！</p>
+  <div class="clear-info">
+    <div class="clear-info-row">
+      <span class="label">プレイヤー</span>
+      <span class="value" id="clear-name">—</span>
+    </div>
+    <div class="clear-info-row">
+      <span class="label">クリアタイム</span>
+      <span class="value">
+        <span class="clear-time-big" id="clear-time">—</span>
+      </span>
+    </div>
+  </div>
+
+  <p style="font-size:0.85rem; color:var(--text-muted);">シェアして友達を誘おう！</p>
+  <div class="share-row">
+    <button class="btn btn-share-x" onclick="shareX()">𝕏 でシェア</button>
+    <button class="btn btn-share-line" onclick="shareLine()">LINE でシェア</button>
+    <button class="btn btn-share-copy" onclick="shareCopy()">🔗 コピー</button>
+  </div>
+  <p class="copy-msg" id="copy-msg"></p>
+
+  <div class="ranking-section">
+    <h3>🏆 TOP10 ランキング</h3>
+    <div class="ranking-list" id="clear-ranking-list">
+      <div class="rank-loading"><div class="spinner"></div>読み込み中...</div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" onclick="restartGame()">もう一度挑戦</button>
+</div>
+
+<!-- ======== RANKING MODAL ======== -->
+<div class="modal-overlay" id="ranking-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🏆 ランキング TOP10</h2>
+      <button class="modal-close" onclick="closeRankingModal()">閉じる</button>
+    </div>
+    <div class="ranking-list" id="modal-ranking-list">
+      <div class="rank-loading"><div class="spinner"></div>読み込み中...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =======================================
+//  Firebase 初期化
+// =======================================
+const firebaseConfig = {
+  apiKey: "AIzaSyBtvaUwj7gryfH1XDHoTfHj7771Py8P368",
+  authDomain: "lockdown-game-d2db7.firebaseapp.com",
+  projectId: "lockdown-game-d2db7",
+  storageBucket: "lockdown-game-d2db7.firebasestorage.app",
+  messagingSenderId: "500963962290",
+  appId: "1:500963962290:web:9a9f06496a5cd25ab308ab"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// =======================================
+//  ステージデータ
+// =======================================
+const stages = [
+  {
+    id: 1,
+    location: "入口ホール",
+    scene: `薄暗い入口ホール。非常用照明だけが赤く点滅している。\n壁に貼られた<strong>非常連絡掲示板</strong>に目が留まった。\n「警備室: 042-<strong>1234</strong>」\nその横のドアに、手書きのメモが貼り付けてあった。`,
+    question: `「連絡先の下4桁を2倍にした数字が暗証番号だ」\n\nメモに書かれた指示に従い、暗証番号を入力せよ。`,
+    answer: "2468",
+    hint: "1234 × 2 = ?"
+  },
+  {
+    id: 2,
+    location: "廊下",
+    scene: `長い廊下を進む。天井に非常灯が並んでいる。\nそれぞれに番号が振られていた：\n「A棟=<strong>6</strong>、B棟=<strong>9</strong>、C棟=<strong>12</strong>、D棟=<strong>?</strong>」\n番号の法則を見つけなければ次の扉は開かない。`,
+    question: `A〜D棟の番号の法則を見つけ、\nD棟の番号を入力せよ。`,
+    answer: "15",
+    hint: "6, 9, 12...それぞれいくつずつ増えている？"
+  },
+  {
+    id: 3,
+    location: "会議室",
+    scene: `会議室のテーブルに3つのサイコロが転がっていた。\n上から見ると「<strong>3</strong>」「<strong>5</strong>」「<strong>2</strong>」が見える。\n壁に貼り紙：「サイコロは向かい合う面の合計が常に7」`,
+    question: `3つのサイコロの<strong>見えない底面</strong>の数字を\nすべて足した合計を入力せよ。`,
+    answer: "11",
+    hint: "向かい合う面の和=7。3の底面=7-3=4、5の底面=7-5=2、2の底面=7-2=5。4+2+5=?"
+  },
+  {
+    id: 4,
+    location: "資料室",
+    scene: `資料棚に6つのファイルが並んでいる。\n背表紙に数字が書かれていた：\n「<strong>2, 5, 10, 17, 26, ___</strong>」\n最後のファイルだけ数字が消えていた。`,
+    question: `数列の法則を見つけ、空欄に入る数字を入力せよ。`,
+    answer: "37",
+    hint: "2=1²+1, 5=2²+1, 10=3²+1, 17=4²+1, 26=5²+1... 次は6²+1=?"
+  },
+  {
+    id: 5,
+    location: "実験室",
+    scene: `実験台の上に試験管が一列に並んでいる。\nラベルに数字が書かれている：\n「<strong>1, 1, 2, 3, 5, 8, 13, ___</strong>」\n最後の試験管だけラベルが剥がれていた。`,
+    question: `数列の法則を見つけ、空欄に入る数字を入力せよ。`,
+    answer: "21",
+    hint: "前の2つの数を足すと次の数になる。8 + 13 = ?"
+  },
+  {
+    id: 6,
+    location: "サーバールーム",
+    scene: `サーバーの唸る部屋に入る。\n正面のモニターに謎の数列が点滅していた。\n「<strong>01001000</strong>」\nキーボードの横に付箋：「これはコンピューターの言葉だ」`,
+    question: `モニターに表示された2進数を10進数に変換して入力せよ。\n（8桁の2進数: 01001000）`,
+    answer: "72",
+    hint: "左から 128, 64, 32, 16, 8, 4, 2, 1 の位。1のある桁だけ足す。64 + 8 = ?"
+  },
+  {
+    id: 7,
+    location: "所長室",
+    scene: `所長室の金庫に謎のメモが貼ってあった。\n所長が残した暗号だ。`,
+    question: `「<strong>4の倍数</strong>でもあり、<strong>7の倍数</strong>でもある数字がある。\n2桁の数字の中で、最も大きいものはいくつ？」`,
+    answer: "84",
+    hint: "4と7の最小公倍数は28。28の倍数を2桁の範囲で探せ: 28, 56, 84..."
+  },
+  {
+    id: 8,
+    location: "休憩室",
+    scene: `休憩室の黒板に数字が大きく書かれていた。\n「<strong>119</strong>」\nその下に小さく：「2つの素数の積だ」`,
+    question: `119は2つの素数を掛け合わせた数だ。\n<strong>大きい方の素数</strong>を入力せよ。`,
+    answer: "17",
+    hint: "119 ÷ 7 = 17。7と17はどちらも素数。大きい方は？"
+  },
+  {
+    id: 9,
+    location: "制御室",
+    scene: `制御パネルのモニターに暗号表が表示されていた：\n「<strong>A=1, B=2, C=4, D=8, E=16, F=32...</strong>」\n（各文字は前の文字の<strong>2倍</strong>）\nその下に「<strong>C A F E</strong>」と入力せよと表示されている。`,
+    question: `暗号表に従い「CAFE」の各文字を数字に変換し、\n全て足した合計を入力せよ。`,
+    answer: "53",
+    hint: "C=4, A=1, F=32, E=16。全部足すと？"
+  },
+  {
+    id: 10,
+    location: "非常口",
+    scene: `ついに非常口の前に辿り着いた。\n最後の扉に最終ロックがかかっている。\nパネルにメッセージが表示された：\n「<strong>すべては最初の部屋から始まった</strong>」`,
+    question: `最初の部屋で解いた暗証番号を入力せよ。\n記憶の中にある、あの数字だ。`,
+    answer: "2468",
+    hint: "Stage 1 で入力した番号。掲示板の電話番号の下4桁を2倍にした数"
+  }
+];
+
+// =======================================
+//  ゲーム状態
+// =======================================
+let currentStage = 0;
+let playerName = "";
+let timerInterval = null;
+let elapsedSeconds = 0;
+let hintVisible = false;
+let clearTimeSeconds = 0;
+
+// =======================================
+//  ユーティリティ
+// =======================================
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  if (m > 0) return `${m}分${String(s).padStart(2, '0')}秒`;
+  return `${s}秒`;
+}
+
+function formatTimePad(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function normalize(input) {
+  return input
+    .trim()
+    .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+    .replace(/[\u30A1-\u30F6]/g, s => String.fromCharCode(s.charCodeAt(0) - 0x60))
+    .toLowerCase();
+}
+
+function nl2br(text) {
+  return text.replace(/\n/g, '<br>');
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// =======================================
+//  画面切替
+// =======================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// =======================================
+//  タイマー
+// =======================================
+function startTimer() {
+  elapsedSeconds = 0;
+  updateTimerDisplay();
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    elapsedSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function updateTimerDisplay() {
+  document.getElementById('timer-display').textContent = formatTimePad(elapsedSeconds);
+}
+
+// =======================================
+//  ゲーム開始
+// =======================================
+function startGame() {
+  const nameInput = document.getElementById('player-name-input').value.trim();
+  playerName = nameInput || '名無し';
+  currentStage = 0;
+  startTimer();
+  renderStage();
+  showScreen('screen-game');
+}
+
+function renderStage() {
+  const s = stages[currentStage];
+  document.getElementById('stage-label').textContent = `ステージ ${s.id}/10`;
+  document.getElementById('location-label').textContent = s.location;
+  document.getElementById('scene-text').innerHTML = nl2br(s.scene);
+  document.getElementById('question-text').innerHTML = nl2br(s.question);
+  document.getElementById('answer-input').value = '';
+  document.getElementById('answer-input').disabled = false;
+
+  const fb = document.getElementById('feedback-msg');
+  fb.className = 'feedback';
+  fb.textContent = '';
+
+  const hint = document.getElementById('hint-box');
+  hint.className = 'hint-box';
+  hint.textContent = '';
+  hintVisible = false;
+  document.getElementById('hint-btn').textContent = '💡 ヒントを見る';
+
+  const progress = (currentStage / stages.length) * 100;
+  document.getElementById('progress-bar').style.width = progress + '%';
+
+  document.getElementById('answer-input').focus();
+}
+
+// =======================================
+//  解答チェック
+// =======================================
+function checkAnswer() {
+  const input = document.getElementById('answer-input').value;
+  const s = stages[currentStage];
+  const fb = document.getElementById('feedback-msg');
+
+  if (normalize(input) === normalize(s.answer)) {
+    fb.className = 'feedback correct';
+    fb.textContent = '✅ 正解！次のステージへ進みます...';
+    document.getElementById('answer-input').disabled = true;
+
+    setTimeout(() => {
+      currentStage++;
+      if (currentStage >= stages.length) {
+        gameComplete();
+      } else {
+        renderStage();
+      }
+    }, 1200);
+  } else {
+    fb.className = 'feedback wrong';
+    fb.textContent = '❌ 不正解です。もう一度試してください。';
+    document.getElementById('answer-input').select();
+  }
+}
+
+document.getElementById('answer-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') checkAnswer();
+});
+
+// =======================================
+//  ヒント
+// =======================================
+function toggleHint() {
+  hintVisible = !hintVisible;
+  const hint = document.getElementById('hint-box');
+  const btn = document.getElementById('hint-btn');
+  if (hintVisible) {
+    hint.textContent = '💡 ' + stages[currentStage].hint;
+    hint.classList.add('visible');
+    btn.textContent = '💡 ヒントを隠す';
+  } else {
+    hint.classList.remove('visible');
+    btn.textContent = '💡 ヒントを見る';
+  }
+}
+
+// =======================================
+//  ゲームクリア
+// =======================================
+async function gameComplete() {
+  stopTimer();
+  clearTimeSeconds = elapsedSeconds;
+
+  document.getElementById('clear-name').textContent = playerName;
+  document.getElementById('clear-time').textContent = formatTime(clearTimeSeconds);
+
+  showScreen('screen-clear');
+  launchParticles();
+
+  await saveRanking();
+  await loadRankingInto('clear-ranking-list');
+}
+
+// =======================================
+//  Firestore ランキング
+// =======================================
+async function saveRanking() {
+  try {
+    await db.collection('rankings').add({
+      name: playerName,
+      time: clearTimeSeconds,
+      date: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (e) {
+    // サイレントに失敗
+  }
+}
+
+async function loadRankingInto(containerId) {
+  const container = document.getElementById(containerId);
+  try {
+    const snap = await db.collection('rankings').orderBy('time', 'asc').limit(10).get();
+    if (snap.empty) {
+      container.innerHTML = '<div class="ranking-empty">まだ記録がありません</div>';
+      return;
+    }
+    const medals = ['🥇', '🥈', '🥉'];
+    let html = '';
+    snap.docs.forEach((doc, idx) => {
+      const d = doc.data();
+      const rank = idx + 1;
+      const rankClass = rank <= 3 ? ` rank-${rank}` : '';
+      if (rank <= 3) {
+        html += `
+          <div class="ranking-item${rankClass}">
+            <span class="rank-icon">${medals[idx]}</span>
+            <span class="rank-num" style="color:var(--text-muted);font-size:0.75rem;">${rank}位</span>
+            <span class="rank-name">${escapeHtml(d.name || '名無し')}</span>
+            <span class="rank-time">${formatTime(d.time)}</span>
+          </div>`;
+      } else {
+        html += `
+          <div class="ranking-item${rankClass}">
+            <span class="rank-num">${rank}位</span>
+            <span class="rank-name">${escapeHtml(d.name || '名無し')}</span>
+            <span class="rank-time">${formatTime(d.time)}</span>
+          </div>`;
+      }
+    });
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = '<div class="ranking-empty">ランキングを取得できませんでした</div>';
+  }
+}
+
+// =======================================
+//  ランキングモーダル
+// =======================================
+function openRankingModal() {
+  document.getElementById('ranking-modal').classList.add('open');
+  const list = document.getElementById('modal-ranking-list');
+  list.innerHTML = '<div class="rank-loading"><div class="spinner"></div>読み込み中...</div>';
+  loadRankingInto('modal-ranking-list');
+}
+
+function closeRankingModal() {
+  document.getElementById('ranking-modal').classList.remove('open');
+}
+
+document.getElementById('ranking-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeRankingModal();
+});
+
+// =======================================
+//  シェア
+// =======================================
+function buildShareText(includeUrl) {
+  const timeStr = formatTime(clearTimeSeconds);
+  let text = `【深夜の研究所〜LOCKDOWN〜】\n全10問クリア！\nクリアタイム: ${timeStr}\n\nあなたも脱出できる？\nhttps://life-calc14.com/escape/\n#脱出ゲーム #謎解き`;
+  return text;
+}
+
+function shareX() {
+  const text = buildShareText(true);
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank', 'noopener');
+}
+
+function shareLine() {
+  const text = buildShareText(true);
+  const shareUrl = 'https://life-calc14.com/escape/';
+  const url = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank', 'noopener');
+}
+
+async function shareCopy() {
+  const text = buildShareText(true);
+  const msg = document.getElementById('copy-msg');
+  try {
+    await navigator.clipboard.writeText(text);
+    msg.textContent = 'コピーしました！';
+    setTimeout(() => { msg.textContent = ''; }, 2500);
+  } catch (e) {
+    msg.textContent = 'コピーに失敗しました';
+  }
+}
+
+// =======================================
+//  パーティクル演出
+// =======================================
+function launchParticles() {
+  const container = document.getElementById('particles');
+  container.innerHTML = '';
+  const colors = ['#00ff88', '#00d4ff', '#ffcc00', '#ff3355', '#ff88cc', '#88ffcc'];
+  for (let i = 0; i < 60; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = 4 + Math.random() * 8;
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      top: ${-(Math.random() * 20)}px;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      width: ${size}px;
+      height: ${size}px;
+      animation-duration: ${1.5 + Math.random() * 2}s;
+      animation-delay: ${Math.random() * 0.8}s;
+    `;
+    container.appendChild(p);
+  }
+  setTimeout(() => { container.innerHTML = ''; }, 4000);
+}
+
+// =======================================
+//  リスタート
+// =======================================
+function restartGame() {
+  document.getElementById('player-name-input').value = '';
+  showScreen('screen-title');
+}
+</script>
+</body>
+</html>
