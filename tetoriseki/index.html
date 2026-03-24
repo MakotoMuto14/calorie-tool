@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>手取り計算ツール | 年収・月収から手取りを無料シミュレーション</title>
+  <meta name="description" content="額面年収・月収を入力するだけで手取り額を即計算。所得税・住民税・社会保険料の内訳もグラフで確認できる無料ツール。" />
+  <link rel="stylesheet" href="../style.css" />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-09VDQ8K3P7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-09VDQ8K3P7');
+  </script>
+  <!-- AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX" crossorigin="anonymous"></script>
+  <style>
+    .page-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
+    .page-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+    .hidden { display: none; }
+
+    /* トグル */
+    .toggle-group {
+      display: flex;
+      background: #f0f0f0;
+      border-radius: 10px;
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+    .toggle-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: transparent;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+    .toggle-btn.active {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    }
+
+    /* 結果メイン */
+    .result-hero {
+      text-align: center;
+      padding: 8px 0 16px;
+    }
+    .result-hero-label { font-size: 0.85rem; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+    .result-hero-value {
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .result-hero-sub {
+      font-size: 1rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .result-hero-sub span { font-weight: 700; color: var(--text); }
+
+    /* ドーナツグラフ */
+    .donut-wrap {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 20px;
+    }
+    .donut-svg { transform: rotate(-90deg); }
+    .donut-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .donut-center-pct { font-size: 1.6rem; font-weight: 900; color: var(--primary); line-height: 1; }
+    .donut-center-lbl { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+
+    /* 凡例 */
+    .legend-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+    .legend-left { display: flex; align-items: center; gap: 8px; }
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .legend-name { font-weight: 600; }
+    .legend-amount { font-weight: 700; color: var(--text); }
+    .legend-pct { font-size: 0.78rem; color: var(--muted); margin-left: 4px; }
+
+    /* 内訳テーブル */
+    .breakdown-table { width: 100%; border-collapse: collapse; }
+    .breakdown-table th,
+    .breakdown-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.88rem;
+    }
+    .breakdown-table th { font-weight: 700; color: var(--muted); font-size: 0.78rem; }
+    .breakdown-table tr:last-child td { border-bottom: none; font-weight: 700; }
+    .breakdown-table .indent { padding-left: 24px; color: var(--muted); }
+    .breakdown-table .subtotal td { background: #fafafa; font-weight: 700; }
+    .breakdown-table .total-row td { background: #f0faf0; color: var(--primary); font-weight: 800; font-size: 0.95rem; }
+    .breakdown-table td:last-child { text-align: right; }
+
+    /* メモ */
+    .note-text {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-top: 4px;
+    }
+
+    /* 比較バー */
+    .compare-bar-wrap {
+      display: flex;
+      height: 28px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 12px 0 8px;
+    }
+    .compare-bar-seg { height: 100%; transition: width 0.6s ease; }
+  </style>
+</head>
+<body>
+  <div style="max-width:480px;margin:0 auto;padding:16px;">
+
+    <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <a href="/" style="color:var(--primary);font-weight:700;text-decoration:none;">← トップへ</a>
+    </header>
+
+    <!-- 入力カード -->
+    <div class="card">
+      <h1 class="page-title">💴 手取り計算ツール</h1>
+      <p class="page-desc">額面から手取りを即計算。所得税・社会保険料の内訳もわかる</p>
+
+      <!-- 年収 / 月収 トグル -->
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="tab-annual" onclick="switchTab('annual')">年収で入力</button>
+        <button class="toggle-btn" id="tab-monthly" onclick="switchTab('monthly')">月収で入力</button>
+      </div>
+
+      <div id="input-annual">
+        <div class="form-group">
+          <label for="annual-income">額面年収</label>
+          <div class="input-unit">
+            <input type="number" id="annual-income" placeholder="400" min="0" max="100000" oninput="calcFromAnnual()" />
+            <span>万円</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="input-monthly" class="hidden">
+        <div class="form-group">
+          <label for="monthly-income">額面月収</label>
+          <div class="input-unit">
+            <input type="number" id="monthly-income" placeholder="30" min="0" max="10000" oninput="calcFromMonthly()" />
+            <span>万円</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="age-input">年齢</label>
+        <div class="input-unit">
+          <input type="number" id="age-input" placeholder="30" min="15" max="80" oninput="recalc()" />
+          <span>歳</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="dependents">扶養人数（配偶者・子など）</label>
+        <select id="dependents" onchange="recalc()">
+          <option value="0">0人（扶養なし）</option>
+          <option value="1">1人</option>
+          <option value="2">2人</option>
+          <option value="3">3人</option>
+          <option value="4">4人</option>
+          <option value="5">5人以上</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 結果カード：手取りヒーロー -->
+    <div class="card hidden" id="result-hero-card">
+      <div class="result-hero">
+        <div class="result-hero-label">年間手取り（概算）</div>
+        <div class="result-hero-value" id="hero-annual">--</div>
+        <div class="result-hero-sub">月換算 <span id="hero-monthly">--</span></div>
+      </div>
+
+      <!-- 帯グラフ -->
+      <div class="compare-bar-wrap" id="compare-bar"></div>
+      <div class="legend-list" id="legend-list"></div>
+    </div>
+
+    <!-- ドーナツグラフ -->
+    <div class="card hidden" id="donut-card">
+      <h2 class="section-title">控除の内訳</h2>
+      <div class="donut-wrap">
+        <svg class="donut-svg" viewBox="0 0 180 180" width="180" height="180" id="donut-svg"></svg>
+        <div class="donut-center">
+          <div class="donut-center-pct" id="donut-pct">--</div>
+          <div class="donut-center-lbl">手取り率</div>
+        </div>
+      </div>
+
+      <!-- 凡例 -->
+      <div class="legend-list" id="donut-legend"></div>
+    </div>
+
+    <!-- 内訳テーブル -->
+    <div class="card hidden" id="table-card">
+      <h2 class="section-title">詳細内訳</h2>
+      <table class="breakdown-table">
+        <thead>
+          <tr><th>項目</th><th>年額（概算）</th></tr>
+        </thead>
+        <tbody id="breakdown-body"></tbody>
+      </table>
+      <p class="note-text" style="margin-top:12px;">
+        ※ 協会けんぽ（東京）の保険料率を使用した概算です。実際の金額は勤務先・加入保険組合・居住地により異なります。<br>
+        ※ 住民税は前年所得課税のため、初年度は徴収されません（ここでは便宜上同年計算）。<br>
+        ※ ボーナス・交通費等は含まれておりません。
+      </p>
+    </div>
+
+    <!-- 他ツールへのリンク -->
+    <div class="card hidden" id="link-card">
+      <h2 class="section-title">あわせて使いたい</h2>
+      <a href="/fire/" class="btn-primary" style="display:block;text-align:center;text-decoration:none;margin-bottom:10px;">FIRE計算ツールで資産計画 →</a>
+      <a href="/" class="btn-primary" style="display:block;text-align:center;text-decoration:none;background:var(--primary-dark);">カロリー管理ツール →</a>
+    </div>
+
+  </div>
+
+  <footer class="site-footer">
+    <a href="/privacy.html">プライバシーポリシー</a>
+    <span>© 2026 life-calc14.com</span>
+  </footer>
+
+  <script>
+    // ===== 定数 =====
+    const DONUT_COLORS = {
+      takehome:  '#4CAF50',
+      shakai:    '#42A5F5',
+      shotoku:   '#FFA726',
+      jumin:     '#EF5350',
+    };
+    const DONUT_LABELS = {
+      takehome: '手取り',
+      shakai:   '社会保険料',
+      shotoku:  '所得税',
+      jumin:    '住民税',
+    };
+
+    let currentMode = 'annual'; // 'annual' | 'monthly'
+    let currentAnnual = 0;      // 万円
+
+    // ===== タブ切り替え =====
+    function switchTab(mode) {
+      currentMode = mode;
+      document.getElementById('tab-annual').classList.toggle('active', mode === 'annual');
+      document.getElementById('tab-monthly').classList.toggle('active', mode === 'monthly');
+      document.getElementById('input-annual').classList.toggle('hidden', mode !== 'annual');
+      document.getElementById('input-monthly').classList.toggle('hidden', mode !== 'monthly');
+      recalc();
+    }
+
+    function calcFromAnnual() {
+      const v = parseFloat(document.getElementById('annual-income').value);
+      currentAnnual = isNaN(v) ? 0 : v;
+      renderResult();
+    }
+
+    function calcFromMonthly() {
+      const v = parseFloat(document.getElementById('monthly-income').value);
+      currentAnnual = isNaN(v) ? 0 : v * 12;
+      renderResult();
+    }
+
+    function recalc() {
+      if (currentMode === 'annual') calcFromAnnual();
+      else calcFromMonthly();
+    }
+
+    // ===== メイン計算 =====
+    function calcTax(annualWan) {
+      const annual = annualWan * 10000; // 円
+      const age = parseInt(document.getElementById('age-input').value) || 30;
+      const deps = parseInt(document.getElementById('dependents').value) || 0;
+
+      // --- 1. 社会保険料（月次で計算し×12）---
+      const monthly = annual / 12;
+
+      // 標準報酬月額（上限65万、下限5.8万）
+      const hyojun = Math.min(Math.max(monthly, 58000), 650000);
+
+      // 健康保険（協会けんぽ東京 9.98% → 折半 4.99%）
+      const kenpo = hyojun * 0.0499;
+      // 介護保険（40歳以上 1.82% → 折半 0.91%）
+      const kaigo = age >= 40 ? hyojun * 0.0091 : 0;
+      // 厚生年金（18.3% → 折半 9.15%）
+      const nenkin = hyojun * 0.0915;
+      // 雇用保険（1.55% → 労働者負担 0.6%）
+      const koyo = monthly * 0.006;
+
+      const shyakaiMonthly = kenpo + kaigo + nenkin + koyo;
+      const shakai = shyakaiMonthly * 12;
+
+      // --- 2. 給与所得控除 ---
+      let kyuyoKojo;
+      if (annual <= 1625000) {
+        kyuyoKojo = 550000;
+      } else if (annual <= 1800000) {
+        kyuyoKojo = annual * 0.4 - 100000;
+      } else if (annual <= 3600000) {
+        kyuyoKojo = annual * 0.3 + 80000;
+      } else if (annual <= 6600000) {
+        kyuyoKojo = annual * 0.2 + 440000;
+      } else if (annual <= 8500000) {
+        kyuyoKojo = annual * 0.1 + 1100000;
+      } else {
+        kyuyoKojo = 1950000;
+      }
+
+      // --- 3. 所得税課税所得 ---
+      const kyuyoShotoku = Math.max(annual - kyuyoKojo, 0);
+      const kihonKojo = 480000;           // 基礎控除
+      const fuyoKojo = deps * 380000;     // 扶養控除（一般16歳以上）
+      const shotokuZeiKazeigaku = Math.max(
+        kyuyoShotoku - shakai - kihonKojo - fuyoKojo,
+        0
+      );
+
+      // 所得税率
+      function incomeTaxRate(taxable) {
+        if (taxable <= 1950000)  return taxable * 0.05;
+        if (taxable <= 3300000)  return taxable * 0.10 - 97500;
+        if (taxable <= 6950000)  return taxable * 0.20 - 427500;
+        if (taxable <= 9000000)  return taxable * 0.23 - 636000;
+        if (taxable <= 18000000) return taxable * 0.33 - 1536000;
+        if (taxable <= 40000000) return taxable * 0.40 - 2796000;
+        return taxable * 0.45 - 4796000;
+      }
+
+      const shotokuBase = incomeTaxRate(shotokuZeiKazeigaku);
+      const shotoku = shotokuBase * 1.021; // 復興特別所得税 2.1%
+
+      // --- 4. 住民税 ---
+      const juminKihon = 430000;
+      const juminKazeigaku = Math.max(
+        kyuyoShotoku - shakai - juminKihon - fuyoKojo,
+        0
+      );
+      const juminTax = juminKazeigaku * 0.10 - 2500; // 均等割引く
+      const jumin = Math.max(juminTax, 0);
+
+      // --- 5. 手取り ---
+      const totalDeduct = shakai + shotoku + jumin;
+      const takehome = Math.max(annual - totalDeduct, 0);
+
+      return {
+        annual, shakai, shotoku, jumin,
+        takehome, totalDeduct,
+        // 内訳
+        kenpoYear: kenpo * 12, kaigoYear: kaigo * 12,
+        nenkinYear: nenkin * 12, koyoYear: koyo * 12,
+        kyuyoKojo, kyuyoShotoku,
+      };
+    }
+
+    // ===== 表示 =====
+    function renderResult() {
+      if (currentAnnual <= 0) {
+        ['result-hero-card', 'donut-card', 'table-card', 'link-card']
+          .forEach(id => document.getElementById(id).classList.add('hidden'));
+        return;
+      }
+
+      const r = calcTax(currentAnnual);
+      const fmt = n => Math.round(n / 10000).toLocaleString() + '万円';
+      const fmtFull = n => Math.round(n).toLocaleString() + '円';
+      const pct = n => (n / r.annual * 100).toFixed(1) + '%';
+
+      // ヒーロー
+      document.getElementById('hero-annual').textContent = fmt(r.takehome);
+      document.getElementById('hero-monthly').textContent =
+        Math.round(r.takehome / 12 / 10000 * 10) / 10 + '万円';
+
+      // 帯グラフ
+      const segs = [
+        { key: 'takehome', val: r.takehome },
+        { key: 'shakai',   val: r.shakai   },
+        { key: 'shotoku',  val: r.shotoku  },
+        { key: 'jumin',    val: r.jumin    },
+      ];
+      const bar = document.getElementById('compare-bar');
+      bar.innerHTML = segs.map(s =>
+        `<div class="compare-bar-seg" style="width:${(s.val/r.annual*100).toFixed(1)}%;background:${DONUT_COLORS[s.key]};"></div>`
+      ).join('');
+
+      // 凡例（帯グラフ下）
+      document.getElementById('legend-list').innerHTML = segs.map(s =>
+        `<div class="legend-item">
+          <div class="legend-left">
+            <div class="legend-dot" style="background:${DONUT_COLORS[s.key]};"></div>
+            <span class="legend-name">${DONUT_LABELS[s.key]}</span>
+          </div>
+          <div>
+            <span class="legend-amount">${fmt(s.val)}</span>
+            <span class="legend-pct">${pct(s.val)}</span>
+          </div>
+        </div>`
+      ).join('');
+
+      // ドーナツ
+      const cx = 90, cy = 90, radius = 70, stroke = 24;
+      const circum = 2 * Math.PI * radius;
+      let offset = 0;
+      const donutData = segs.filter(s => s.key !== 'takehome');
+      const allSegs = [{ key: 'takehome', val: r.takehome }, ...donutData];
+
+      document.getElementById('donut-svg').innerHTML = allSegs.map(s => {
+        const ratio = s.val / r.annual;
+        const dash = circum * ratio;
+        const el = `<circle
+          cx="${cx}" cy="${cy}" r="${radius}"
+          fill="none"
+          stroke="${DONUT_COLORS[s.key]}"
+          stroke-width="${stroke}"
+          stroke-dasharray="${dash} ${circum - dash}"
+          stroke-dashoffset="${-offset}"
+          stroke-linecap="butt"
+        />`;
+        offset += dash;
+        return el;
+      }).join('');
+
+      document.getElementById('donut-pct').textContent =
+        (r.takehome / r.annual * 100).toFixed(1) + '%';
+
+      // ドーナツ凡例
+      document.getElementById('donut-legend').innerHTML = allSegs.map(s =>
+        `<div class="legend-item">
+          <div class="legend-left">
+            <div class="legend-dot" style="background:${DONUT_COLORS[s.key]};"></div>
+            <span class="legend-name">${DONUT_LABELS[s.key]}</span>
+          </div>
+          <div>
+            <span class="legend-amount">${fmt(s.val)}</span>
+            <span class="legend-pct">${pct(s.val)}</span>
+          </div>
+        </div>`
+      ).join('');
+
+      // 内訳テーブル
+      const rows = [
+        { name: '額面収入', amount: r.annual, cls: '' },
+        { name: '社会保険料 合計', amount: -r.shakai, cls: 'subtotal' },
+        { name: '　健康保険料', amount: -r.kenpoYear, cls: 'indent' },
+        ...(r.kaigoYear > 0 ? [{ name: '　介護保険料（40歳以上）', amount: -r.kaigoYear, cls: 'indent' }] : []),
+        { name: '　厚生年金保険料', amount: -r.nenkinYear, cls: 'indent' },
+        { name: '　雇用保険料', amount: -r.koyoYear, cls: 'indent' },
+        { name: '所得税（復興税含む）', amount: -r.shotoku, cls: '' },
+        { name: '住民税（概算）', amount: -r.jumin, cls: '' },
+        { name: '手取り（年額）', amount: r.takehome, cls: 'total-row' },
+      ];
+
+      document.getElementById('breakdown-body').innerHTML = rows.map(row => `
+        <tr class="${row.cls}">
+          <td class="${row.cls === 'indent' ? 'indent' : ''}">${row.name}</td>
+          <td>${row.amount >= 0 ? '' : '− '}${Math.abs(Math.round(row.amount)).toLocaleString()}円</td>
+        </tr>
+      `).join('');
+
+      // 表示
+      ['result-hero-card', 'donut-card', 'table-card', 'link-card']
+        .forEach(id => document.getElementById(id).classList.remove('hidden'));
+    }
+  </script>
+</body>
+</html>
