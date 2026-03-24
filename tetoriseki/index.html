@@ -57,7 +57,7 @@
     .result-hero-value {
       font-size: 2.8rem;
       font-weight: 900;
-      color: var(--primary);
+      color: #16A34A;
       line-height: 1;
     }
     .result-hero-sub {
@@ -82,7 +82,7 @@
       transform: translate(-50%, -50%);
       text-align: center;
     }
-    .donut-center-pct { font-size: 1.6rem; font-weight: 900; color: var(--primary); line-height: 1; }
+    .donut-center-pct { font-size: 1.6rem; font-weight: 900; color: #16A34A; line-height: 1; }
     .donut-center-lbl { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
 
     /* 凡例 */
@@ -121,7 +121,7 @@
     .breakdown-table tr:last-child td { border-bottom: none; font-weight: 700; }
     .breakdown-table .indent { padding-left: 24px; color: var(--muted); }
     .breakdown-table .subtotal td { background: #fafafa; font-weight: 700; }
-    .breakdown-table .total-row td { background: #f0faf0; color: var(--primary); font-weight: 800; font-size: 0.95rem; }
+    .breakdown-table .total-row td { background: #f0fdf4; color: #16A34A; font-weight: 800; font-size: 0.95rem; }
     .breakdown-table td:last-child { text-align: right; }
 
     /* メモ */
@@ -263,10 +263,10 @@
   <script>
     // ===== 定数 =====
     const DONUT_COLORS = {
-      takehome:  '#4CAF50',
-      shakai:    '#42A5F5',
-      shotoku:   '#FFA726',
-      jumin:     '#EF5350',
+      takehome:  '#16A34A',  // 濃い緑
+      shakai:    '#2563EB',  // 濃い青
+      shotoku:   '#EA580C',  // 濃いオレンジ
+      jumin:     '#DC2626',  // 濃い赤
     };
     const DONUT_LABELS = {
       takehome: '手取り',
@@ -319,8 +319,8 @@
 
       // 健康保険（協会けんぽ東京 9.98% → 折半 4.99%）
       const kenpo = hyojun * 0.0499;
-      // 介護保険（40歳以上 1.82% → 折半 0.91%）
-      const kaigo = age >= 40 ? hyojun * 0.0091 : 0;
+      // 介護保険（40歳以上 2024年度1.60% → 折半 0.80%）
+      const kaigo = age >= 40 ? hyojun * 0.0080 : 0;
       // 厚生年金（18.3% → 折半 9.15%）
       const nenkin = hyojun * 0.0915;
       // 雇用保険（1.55% → 労働者負担 0.6%）
@@ -374,7 +374,8 @@
         kyuyoShotoku - shakai - juminKihon - fuyoKojo,
         0
       );
-      const juminTax = juminKazeigaku * 0.10 - 2500; // 均等割引く
+      // 所得割 - 調整控除(2,500) + 均等割(6,000 ※2024年度、森林環境税含む)
+      const juminTax = juminKazeigaku * 0.10 - 2500 + 6000;
       const jumin = Math.max(juminTax, 0);
 
       // --- 5. 手取り ---
