@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIRE計算機 | 早期退職・経済的自立は何年後？</title>
+  <meta name="description" content="現在の貯蓄・毎月の積立・生活費を入力するだけで、FIREまであと何年かを無料で計算。4%ルールに基づいた必要資産額も自動算出。" />
+  <link rel="stylesheet" href="style.css" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-09VDQ8K3P7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-09VDQ8K3P7');
+  </script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2695760144989493"
+     crossorigin="anonymous"></script>
+  <style>
+    .fire-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-align: center;
+      margin: 8px 0 4px;
+    }
+    .fire-label {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+    }
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .result-item {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+    .result-item .val {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .result-item .lbl {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .progress-wrap {
+      margin: 8px 0 4px;
+    }
+    .progress-bar-bg {
+      background: var(--border);
+      border-radius: 8px;
+      height: 14px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #81C784);
+      border-radius: 8px;
+      transition: width 0.6s ease;
+    }
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .chart-wrap {
+      margin-top: 8px;
+    }
+    .chart-bar-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 8px;
+    }
+    .chart-bar-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      width: 44px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .chart-bar-outer {
+      flex: 1;
+      background: var(--border);
+      border-radius: 4px;
+      height: 18px;
+      overflow: hidden;
+    }
+    .chart-bar-inner {
+      height: 100%;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding-left: 6px;
+      font-size: 0.72rem;
+      color: white;
+      font-weight: 600;
+      white-space: nowrap;
+      min-width: 2px;
+    }
+    .bar-savings { background: var(--primary); }
+    .bar-gain    { background: #81C784; }
+    .bar-target  { background: #FF9800; }
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .legend-dot {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      margin-right: 4px;
+    }
+    .alert-box {
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+    .alert-success { background: #e8f5e9; color: #2e7d32; }
+    .alert-warning { background: #fff3e0; color: #e65100; }
+    .alert-info    { background: #e3f2fd; color: #1565c0; }
+    .nav-links {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .nav-links a {
+      font-size: 0.82rem;
+      color: var(--primary-dark);
+      text-decoration: none;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="screen active" style="max-width:480px;margin:0 auto;padding:16px;">
+
+    <!-- ヘッダー -->
+    <div class="card" style="padding:20px 20px 16px;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:4px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="3,17 8,11 13,14 21,5" stroke="#4CAF50" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="17,5 21,5 21,9" stroke="#4CAF50" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="3" y1="21" x2="21" y2="21" stroke="#e0e0e0" stroke-width="1.5"/>
+        </svg>
+        <h1 style="font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,#388E3C,#66BB6A);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">FIRE計算機</h1>
+      </div>
+      <p class="sub">早期退職まで、あと何年？</p>
+      <div class="nav-links">
+        <a href="/">カロリー管理</a>
+        <a href="/bmi.html">BMI計算</a>
+      </div>
+    </div>
+
+    <!-- 入力フォーム -->
+    <div class="card">
+      <h2 style="font-size:1rem;margin-bottom:16px;color:var(--muted);">あなたの情報を入力</h2>
+
+      <div class="form-group">
+        <label>現在の年齢</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" id="age" value="30" min="18" max="70" style="flex:1;" />
+          <span style="color:var(--muted);">歳</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>現在の貯蓄・投資額</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" id="savings" value="300" min="0" style="flex:1;" />
+          <span style="color:var(--muted);">万円</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>毎月の積立額</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" id="monthly" value="5" min="0" style="flex:1;" />
+          <span style="color:var(--muted);">万円/月</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>退職後の年間生活費</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" id="living" value="240" min="1" style="flex:1;" />
+          <span style="color:var(--muted);">万円/年</span>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-top:4px;">月20万円なら240万円</p>
+      </div>
+
+      <div class="form-group">
+        <label>年間利回り（期待リターン）</label>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" id="rate" value="5" min="0" max="30" step="0.1" style="flex:1;" />
+          <span style="color:var(--muted);">%</span>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-top:4px;">インデックス投資の平均は4〜7%</p>
+      </div>
+
+      <button class="btn-primary" id="calcBtn" style="width:100%;margin-top:8px;">計算する</button>
+    </div>
+
+    <!-- 結果エリア -->
+    <div id="result-area" style="display:none;">
+
+      <!-- FIRE達成まで -->
+      <div class="card">
+        <div id="fire-years-display"></div>
+        <div class="result-grid" id="result-grid"></div>
+        <div id="alert-msg"></div>
+      </div>
+
+      <!-- 進捗バー -->
+      <div class="card">
+        <h3 style="font-size:0.9rem;margin-bottom:12px;color:var(--muted);">現在の達成率</h3>
+        <div class="progress-wrap">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progress-fill" style="width:0%;"></div>
+          </div>
+          <div class="progress-labels">
+            <span id="progress-current">現在 0万円</span>
+            <span id="progress-pct">0%</span>
+            <span id="progress-target">目標 0万円</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 資産推移チャート -->
+      <div class="card">
+        <h3 style="font-size:0.9rem;margin-bottom:12px;color:var(--muted);">資産推移（5年ごと）</h3>
+        <div class="chart-wrap" id="chart-wrap"></div>
+        <div class="chart-legend">
+          <span><span class="legend-dot" style="background:var(--primary);"></span>積立元本</span>
+          <span><span class="legend-dot" style="background:#81C784;"></span>運用益</span>
+          <span><span class="legend-dot" style="background:#FF9800;"></span>目標額</span>
+        </div>
+      </div>
+
+      <!-- 月の積立目標 -->
+      <div class="card" id="monthly-advice-card">
+        <h3 style="font-size:0.9rem;margin-bottom:8px;color:var(--muted);">毎月の積立シミュレーション</h3>
+        <div id="monthly-advice"></div>
+      </div>
+
+    </div>
+
+    <!-- フッター -->
+    <p style="text-align:center;font-size:0.75rem;color:var(--muted);margin-top:8px;">
+      ※4%ルール（Trinity Study）に基づいた試算です。実際の運用成果を保証するものではありません。
+      <br><a href="/privacy.html" style="color:var(--muted);">プライバシーポリシー</a>
+    </p>
+  </div>
+
+  <script>
+    function fmt(n) {
+      if (n >= 10000) return (n / 10000).toFixed(1) + '億円';
+      return Math.round(n).toLocaleString() + '万円';
+    }
+
+    function calcFV(principal, monthly, rate, years) {
+      const r = rate / 100 / 12;
+      if (r === 0) return principal + monthly * 12 * years;
+      const months = years * 12;
+      const fv = principal * Math.pow(1 + r, months) + monthly * ((Math.pow(1 + r, months) - 1) / r);
+      return fv;
+    }
+
+    function calcYearsToFire(principal, monthly, rate, target) {
+      if (principal >= target) return 0;
+      const r = rate / 100 / 12;
+      let asset = principal;
+      for (let m = 1; m <= 600; m++) {
+        asset = asset * (1 + r) + monthly;
+        if (asset >= target) return m / 12;
+      }
+      return null; // 50年以内に達成不可
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', function () {
+      const age     = parseFloat(document.getElementById('age').value) || 30;
+      const savings = parseFloat(document.getElementById('savings').value) || 0;
+      const monthly = parseFloat(document.getElementById('monthly').value) || 0;
+      const living  = parseFloat(document.getElementById('living').value) || 240;
+      const rate    = parseFloat(document.getElementById('rate').value) || 5;
+
+      const target  = living * 25; // 4%ルール
+      const yearsRaw = calcYearsToFire(savings, monthly, rate, target);
+
+      const resultArea = document.getElementById('result-area');
+      resultArea.style.display = 'block';
+      resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // FIRE達成年数表示
+      const fireDisplay = document.getElementById('fire-years-display');
+      if (yearsRaw === null) {
+        fireDisplay.innerHTML = `
+          <div class="fire-number" style="color:#F44336;">50年以内に達成困難</div>
+          <div class="fire-label">積立額を増やすか、生活費を見直しましょう</div>`;
+      } else if (yearsRaw === 0) {
+        fireDisplay.innerHTML = `
+          <div class="fire-number">すでにFIRE達成！</div>
+          <div class="fire-label">おめでとうございます</div>`;
+      } else {
+        const yrs = Math.floor(yearsRaw);
+        const mos = Math.round((yearsRaw - yrs) * 12);
+        const fireAge = Math.round(age + yearsRaw);
+        fireDisplay.innerHTML = `
+          <div class="fire-number">${yrs}年${mos > 0 ? mos + 'ヶ月後' : '後'}</div>
+          <div class="fire-label">にFIRE達成予定（${fireAge}歳）</div>`;
+      }
+
+      // 結果グリッド
+      const monthlyNeeded = calcMonthlyNeeded(savings, rate, target, 20);
+      document.getElementById('result-grid').innerHTML = `
+        <div class="result-item">
+          <div class="val">${fmt(target)}</div>
+          <div class="lbl">必要資産額<br>（4%ルール）</div>
+        </div>
+        <div class="result-item">
+          <div class="val">${fmt(savings)}</div>
+          <div class="lbl">現在の資産</div>
+        </div>
+        <div class="result-item">
+          <div class="val">${fmt(target - savings > 0 ? target - savings : 0)}</div>
+          <div class="lbl">あと必要な額</div>
+        </div>
+        <div class="result-item">
+          <div class="val">${living}万円</div>
+          <div class="lbl">年間生活費</div>
+        </div>
+      `;
+
+      // アドバイス
+      const alertMsg = document.getElementById('alert-msg');
+      if (yearsRaw === null) {
+        alertMsg.innerHTML = `<div class="alert-box alert-warning">現在の積立額では50年以内のFIRE達成が難しい試算です。<br>毎月の積立を増やすか、退職後の生活費を抑えることを検討してみましょう。</div>`;
+      } else if (yearsRaw <= 10) {
+        alertMsg.innerHTML = `<div class="alert-box alert-success">素晴らしい！あと10年以内でFIRE達成の見込みです。このペースを維持しましょう。</div>`;
+      } else if (yearsRaw <= 20) {
+        alertMsg.innerHTML = `<div class="alert-box alert-info">順調なペースです。利回りを少し上げるか積立額を増やすと、さらに早まります。</div>`;
+      } else {
+        alertMsg.innerHTML = `<div class="alert-box alert-warning">FIRE達成まで時間がかかります。積立額・利回りの見直しを検討しましょう。</div>`;
+      }
+
+      // 進捗バー
+      const pct = Math.min(100, Math.round((savings / target) * 100));
+      document.getElementById('progress-fill').style.width = pct + '%';
+      document.getElementById('progress-current').textContent = '現在 ' + fmt(savings);
+      document.getElementById('progress-pct').textContent = pct + '%';
+      document.getElementById('progress-target').textContent = '目標 ' + fmt(target);
+
+      // チャート
+      const chartWrap = document.getElementById('chart-wrap');
+      chartWrap.innerHTML = '';
+      const maxAsset = Math.max(target * 1.1, calcFV(savings, monthly, rate, 30));
+      for (let y = 5; y <= 30; y += 5) {
+        const fv = calcFV(savings, monthly, rate, y);
+        const principal = Math.min(savings + monthly * 12 * y, fv);
+        const gain = Math.max(0, fv - principal);
+        const barPct = Math.min(100, (fv / maxAsset) * 100);
+        const gainPct = (gain / fv) * barPct;
+        const savPct = barPct - gainPct;
+        const targetPct = Math.min(100, (target / maxAsset) * 100);
+
+        chartWrap.innerHTML += `
+          <div class="chart-bar-row">
+            <div class="chart-bar-label">${y}年後</div>
+            <div style="flex:1;position:relative;">
+              <div class="chart-bar-outer">
+                <div style="display:flex;height:100%;">
+                  <div class="chart-bar-inner bar-savings" style="width:${savPct}%;"></div>
+                  <div class="chart-bar-inner bar-gain" style="width:${gainPct}%;"></div>
+                </div>
+              </div>
+              <div style="position:absolute;top:0;left:${targetPct}%;width:2px;height:100%;background:#FF9800;opacity:0.8;"></div>
+            </div>
+            <div style="font-size:0.78rem;color:var(--text);width:60px;text-align:right;">${fmt(fv)}</div>
+          </div>`;
+      }
+
+      // 月積立アドバイス
+      const adviceDiv = document.getElementById('monthly-advice');
+      const targets = [10, 15, 20, 25, 30];
+      let html = '';
+      for (const yr of targets) {
+        const needed = calcMonthlyNeeded(savings, rate, target, yr);
+        if (needed !== null) {
+          html += `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.88rem;">
+            <span style="color:var(--muted);">${yr}年でFIRE</span>
+            <span style="font-weight:600;">毎月 <span style="color:var(--primary);">${Math.round(needed)}万円</span>の積立が必要</span>
+          </div>`;
+          break; // 最初の実現可能なケースだけ表示
+        }
+      }
+      // 複数パターン表示
+      html = '';
+      for (const yr of targets) {
+        const needed = calcMonthlyNeeded(savings, rate, target, yr);
+        const label = needed === null ? '難しい' : `毎月${Math.ceil(needed * 10) / 10}万円`;
+        const color = needed === null ? 'var(--muted)' : (needed <= monthly ? 'var(--primary)' : 'var(--text)');
+        const check = needed !== null && needed <= monthly ? ' ◎' : '';
+        html += `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.88rem;">
+          <span style="color:var(--muted);">${yr}年後にFIRE</span>
+          <span style="font-weight:600;color:${color};">${label}${check}</span>
+        </div>`;
+      }
+      adviceDiv.innerHTML = html + `<p style="font-size:0.78rem;color:var(--muted);margin-top:8px;">◎は現在の積立額で達成可能なプラン</p>`;
+    });
+
+    function calcMonthlyNeeded(principal, rate, target, years) {
+      const r = rate / 100 / 12;
+      const months = years * 12;
+      if (r === 0) {
+        const needed = (target - principal) / months;
+        return needed < 0 ? 0 : needed;
+      }
+      const fvFactor = Math.pow(1 + r, months);
+      const needed = (target - principal * fvFactor) / ((fvFactor - 1) / r);
+      if (needed < 0) return 0;
+      if (needed > 1000) return null;
+      return needed;
+    }
+
+    // 初期計算
+    document.getElementById('calcBtn').click();
+  </script>
+</body>
+</html>
