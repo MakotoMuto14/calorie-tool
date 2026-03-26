@@ -504,8 +504,17 @@
     .ranking-item.rank-2 { border-left: 3px solid #c0c0c0; }
     .ranking-item.rank-3 { border-left: 3px solid #cd7f32; }
 
-    .rank-icon { width: 22px; text-align: center; font-size: 1.1rem; flex-shrink: 0; }
-    .rank-num  { width: 22px; text-align: center; color: var(--text-muted); font-size: 0.8rem; flex-shrink: 0; }
+    .rank-icon { width: 28px; display:flex; align-items:center; justify-content:center; flex-shrink: 0; }
+    .rank-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.6rem; height: 1.6rem; border-radius: 50%;
+      font-size: 0.7rem; font-weight: 800; letter-spacing: 0; flex-shrink: 0;
+    }
+    .rank-badge.gold   { background: linear-gradient(135deg,#FFD700,#C8960C); color:#1a0e00; }
+    .rank-badge.silver { background: linear-gradient(135deg,#D8D8D8,#909090); color:#1a1a1a; }
+    .rank-badge.bronze { background: linear-gradient(135deg,#CD7F32,#8B5E1A); color:#fff; }
+    .rank-num  { width: 28px; text-align: center; color: var(--text-muted); font-size: 0.8rem; flex-shrink: 0; }
+    .btn-icon { width:1em; height:1em; vertical-align:-0.15em; margin-right:0.35em; flex-shrink:0; }
     .rank-name { flex: 1; color: var(--text); font-weight: 600; }
     .rank-time { color: var(--yellow); font-weight: 700; font-variant-numeric: tabular-nums; }
 
@@ -628,17 +637,17 @@
     10の謎を解き、この研究所から脱出せよ。
   </div>
   <div class="title-info">
-    <span>🧩 全10問</span>
-    <span>⏱ タイム計測</span>
-    <span>🏆 オンラインランキング</span>
+    <span><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>全10問</span>
+    <span><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>タイム計測</span>
+    <span><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="M6 3h12v8a6 6 0 0 1-12 0V3z"/></svg>オンラインランキング</span>
   </div>
-  <button class="btn btn-rank" onclick="openRankingModal()">🏆 ランキングを見る</button>
+  <button class="btn btn-rank" onclick="openRankingModal()"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="M6 3h12v8a6 6 0 0 1-12 0V3z"/></svg>ランキングを見る</button>
   <button class="btn btn-primary" onclick="showScreen('screen-name')">ゲームスタート</button>
 </div>
 
 <!-- ======== NAME SCREEN ======== -->
 <div id="screen-name" class="screen">
-  <p class="name-title">🔒 プレイヤー名を入力</p>
+  <p class="name-title"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>プレイヤー名を入力</p>
   <p class="name-desc">クリア後にランキングへ登録されます（最大10文字）</p>
   <input type="text" id="player-name-input" maxlength="10" placeholder="例: 山田太郎">
   <button class="btn btn-primary" onclick="startGame()">スタート！</button>
@@ -648,7 +657,7 @@
 <!-- ======== GAME SCREEN ======== -->
 <div id="screen-game" class="screen">
   <header class="game-header">
-    <span class="game-header-logo">🔒 LOCKDOWN</span>
+    <span class="game-header-logo"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>LOCKDOWN</span>
     <span class="game-stage-label" id="stage-label">ステージ 1/10</span>
     <span class="game-timer" id="timer-display">00:00</span>
   </header>
@@ -664,7 +673,7 @@
       <button class="btn btn-answer" onclick="checkAnswer()">解答</button>
     </div>
     <div class="feedback" id="feedback-msg"></div>
-    <button class="btn btn-hint" id="hint-btn" onclick="toggleHint()">💡 ヒントを見る</button>
+    <button class="btn btn-hint" id="hint-btn" onclick="toggleHint()"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14z"/></svg><span id="hint-btn-text">ヒントを見る</span></button>
     <div class="hint-box" id="hint-box"></div>
   </div>
 </div>
@@ -672,7 +681,7 @@
 <!-- ======== CLEAR SCREEN ======== -->
 <div id="screen-clear" class="screen">
   <div class="particles" id="particles"></div>
-  <div class="clear-title">🎉 脱出成功！</div>
+  <div class="clear-title">脱出成功</div>
   <p class="clear-subtitle">研究所からの脱出おめでとうございます！</p>
   <div class="clear-info">
     <div class="clear-info-row">
@@ -691,12 +700,12 @@
   <div class="share-row">
     <button class="btn btn-share-x" onclick="shareX()">𝕏 でシェア</button>
     <button class="btn btn-share-line" onclick="shareLine()">LINE でシェア</button>
-    <button class="btn btn-share-copy" onclick="shareCopy()">🔗 コピー</button>
+    <button class="btn btn-share-copy" onclick="shareCopy()"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>コピー</button>
   </div>
   <p class="copy-msg" id="copy-msg"></p>
 
   <div class="ranking-section">
-    <h3>🏆 TOP10 ランキング</h3>
+    <h3><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="M6 3h12v8a6 6 0 0 1-12 0V3z"/></svg>TOP10 ランキング</h3>
     <div class="ranking-list" id="clear-ranking-list">
       <div class="rank-loading"><div class="spinner"></div>読み込み中...</div>
     </div>
@@ -709,7 +718,7 @@
 <div class="modal-overlay" id="ranking-modal">
   <div class="modal-box">
     <div class="modal-header">
-      <h2>🏆 ランキング TOP10</h2>
+      <h2><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="M6 3h12v8a6 6 0 0 1-12 0V3z"/></svg>ランキング TOP10</h2>
       <button class="modal-close" onclick="closeRankingModal()">閉じる</button>
     </div>
     <div class="ranking-list" id="modal-ranking-list">
@@ -924,7 +933,7 @@ function renderStage() {
   hint.className = 'hint-box';
   hint.textContent = '';
   hintVisible = false;
-  document.getElementById('hint-btn').textContent = '💡 ヒントを見る';
+  document.getElementById('hint-btn-text').textContent = 'ヒントを見る';
 
   const progress = (currentStage / stages.length) * 100;
   document.getElementById('progress-bar').style.width = progress + '%';
@@ -942,7 +951,7 @@ function checkAnswer() {
 
   if (normalize(input) === normalize(s.answer)) {
     fb.className = 'feedback correct';
-    fb.textContent = '✅ 正解！次のステージへ進みます...';
+    fb.textContent = '正解！次のステージへ進みます...';
     document.getElementById('answer-input').disabled = true;
 
     setTimeout(() => {
@@ -955,7 +964,7 @@ function checkAnswer() {
     }, 1200);
   } else {
     fb.className = 'feedback wrong';
-    fb.textContent = '❌ 不正解です。もう一度試してください。';
+    fb.textContent = '不正解です。もう一度試してください。';
     document.getElementById('answer-input').select();
   }
 }
@@ -972,12 +981,12 @@ function toggleHint() {
   const hint = document.getElementById('hint-box');
   const btn = document.getElementById('hint-btn');
   if (hintVisible) {
-    hint.textContent = '💡 ' + stages[currentStage].hint;
+    hint.textContent = stages[currentStage].hint;
     hint.classList.add('visible');
-    btn.textContent = '💡 ヒントを隠す';
+    document.getElementById('hint-btn-text').textContent = 'ヒントを隠す';
   } else {
     hint.classList.remove('visible');
-    btn.textContent = '💡 ヒントを見る';
+    document.getElementById('hint-btn-text').textContent = 'ヒントを見る';
   }
 }
 
@@ -1021,7 +1030,7 @@ async function loadRankingInto(containerId) {
       container.innerHTML = '<div class="ranking-empty">まだ記録がありません</div>';
       return;
     }
-    const medals = ['🥇', '🥈', '🥉'];
+    const medalClass = ['gold', 'silver', 'bronze'];
     let html = '';
     snap.docs.forEach((doc, idx) => {
       const d = doc.data();
@@ -1030,8 +1039,7 @@ async function loadRankingInto(containerId) {
       if (rank <= 3) {
         html += `
           <div class="ranking-item${rankClass}">
-            <span class="rank-icon">${medals[idx]}</span>
-            <span class="rank-num" style="color:var(--text-muted);font-size:0.75rem;">${rank}位</span>
+            <span class="rank-icon"><span class="rank-badge ${medalClass[idx]}">${rank}</span></span>
             <span class="rank-name">${escapeHtml(d.name || '名無し')}</span>
             <span class="rank-time">${formatTime(d.time)}</span>
           </div>`;
