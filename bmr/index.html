@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>基礎代謝計算ツール | 年齢・身長・体重から無料で簡単計算</title>
+  <meta name="description" content="性別・年齢・身長・体重を入力するだけで基礎代謝（BMR）を瞬時に計算。活動量別の1日消費カロリーやダイエット目標カロリーの目安もわかる無料ツール。" />
+  <link rel="stylesheet" href="../style.css" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-09VDQ8K3P7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-09VDQ8K3P7');
+  </script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2695760144989493"
+     crossorigin="anonymous"></script>
+  <style>
+    .gender-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .gender-btn {
+      flex: 1;
+      padding: 14px;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      background: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #555;
+    }
+    .gender-btn.active-male {
+      border-color: #2196f3;
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+    .gender-btn.active-female {
+      border-color: #e91e63;
+      background: #fce4ec;
+      color: #880e4f;
+    }
+
+    .result-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      padding: 36px 24px;
+      text-align: center;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .result-label {
+      font-size: 0.9rem;
+      opacity: 0.85;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .result-value {
+      font-size: 4.5rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .result-unit {
+      font-size: 1.1rem;
+      opacity: 0.85;
+    }
+    .result-sub {
+      margin-top: 16px;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .activity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .activity-card {
+      background: #f8f9fa;
+      border-radius: 14px;
+      padding: 16px 12px;
+      text-align: center;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .activity-card:hover { border-color: #667eea; }
+    .activity-card.selected { border-color: #667eea; background: #f0f0ff; }
+    .activity-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    .activity-desc {
+      font-size: 0.72rem;
+      color: #888;
+    }
+    .activity-kcal {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #667eea;
+      margin-top: 8px;
+    }
+
+    .diet-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    .diet-table th {
+      background: #f0f0ff;
+      color: #555;
+      font-size: 0.8rem;
+      padding: 10px 12px;
+      text-align: left;
+    }
+    .diet-table td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 0.9rem;
+    }
+    .diet-table tr:last-child td { border-bottom: none; }
+    .diet-kcal {
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .tag-maintain  { background: #e8f5e9; color: #2e7d32; }
+    .tag-slow      { background: #fff8e1; color: #f57f17; }
+    .tag-standard  { background: #fff3e0; color: #e65100; }
+
+    .info-box {
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      font-size: 0.88rem;
+      color: #555;
+      line-height: 1.7;
+    }
+    .info-box h3 {
+      font-size: 0.95rem;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .tool-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+    .tool-link {
+      flex: 1;
+      min-width: 140px;
+      display: block;
+      padding: 14px 16px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      text-align: center;
+      text-decoration: none;
+      color: #333;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: 1px solid #eee;
+      transition: all 0.2s;
+    }
+    .tool-link:hover { background: #f0f0ff; border-color: #667eea; color: #667eea; }
+    .tool-link-label { font-size: 0.72rem; color: #999; display: block; margin-bottom: 4px; }
+
+    #result-section { display: none; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a href="/" class="site-logo">life-calc14</a>
+    <nav class="site-nav">
+      <a href="/">カロリー計算</a>
+      <a href="/bmi.html">BMI</a>
+      <a href="/bmr/" class="active">基礎代謝</a>
+      <a href="/fire.html">FIRE計算</a>
+      <a href="/escape/">脱出ゲーム</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1 class="page-title">基礎代謝計算ツール</h1>
+    <p class="page-desc">性別・年齢・身長・体重を入力するだけで基礎代謝を計算。ダイエットに必要な目標カロリーの目安もわかります。</p>
+
+    <!-- AdSense -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-2695760144989493"
+         data-ad-slot="auto"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+
+    <div class="card">
+      <!-- 性別 -->
+      <div class="form-group">
+        <label class="form-label">性別</label>
+        <div class="gender-row">
+          <button class="gender-btn active-male" id="btn-male" onclick="setGender('male')">男性</button>
+          <button class="gender-btn" id="btn-female" onclick="setGender('female')">女性</button>
+        </div>
+      </div>
+
+      <!-- 年齢 -->
+      <div class="form-group">
+        <label class="form-label" for="age">年齢</label>
+        <div class="input-row">
+          <input type="number" id="age" class="form-input" placeholder="例: 30" min="10" max="100" />
+          <span class="input-unit">歳</span>
+        </div>
+      </div>
+
+      <!-- 身長 -->
+      <div class="form-group">
+        <label class="form-label" for="height">身長</label>
+        <div class="input-row">
+          <input type="number" id="height" class="form-input" placeholder="例: 165" min="100" max="250" />
+          <span class="input-unit">cm</span>
+        </div>
+      </div>
+
+      <!-- 体重 -->
+      <div class="form-group">
+        <label class="form-label" for="weight">体重</label>
+        <div class="input-row">
+          <input type="number" id="weight" class="form-input" placeholder="例: 60" min="20" max="300" />
+          <span class="input-unit">kg</span>
+        </div>
+      </div>
+
+      <button class="btn-calc" onclick="calculate()">基礎代謝を計算する</button>
+      <p class="error-msg" id="error-msg"></p>
+    </div>
+
+    <!-- 結果 -->
+    <div id="result-section">
+      <!-- BMR -->
+      <div class="result-card">
+        <div class="result-label">あなたの基礎代謝（BMR）</div>
+        <div class="result-value" id="bmr-value">—</div>
+        <div class="result-unit">kcal / 日</div>
+        <div class="result-sub" id="bmr-sub"></div>
+      </div>
+
+      <!-- 活動量別 -->
+      <div class="card">
+        <h2 class="section-title">活動量別・1日の消費カロリー</h2>
+        <p style="font-size:0.85rem;color:#888;margin-bottom:16px;">あなたの生活スタイルに近いものを選んでください</p>
+        <div class="activity-grid" id="activity-grid">
+          <div class="activity-card selected" onclick="selectActivity(this, 1.2)">
+            <div class="activity-name">ほぼ運動なし</div>
+            <div class="activity-desc">デスクワーク中心</div>
+            <div class="activity-kcal" id="act-0">—</div>
+            <div style="font-size:0.7rem;color:#aaa">kcal</div>
+          </div>
+          <div class="activity-card" onclick="selectActivity(this, 1.375)">
+            <div class="activity-name">軽い運動</div>
+            <div class="activity-desc">週1〜3日</div>
+            <div class="activity-kcal" id="act-1">—</div>
+            <div style="font-size:0.7rem;color:#aaa">kcal</div>
+          </div>
+          <div class="activity-card" onclick="selectActivity(this, 1.55)">
+            <div class="activity-name">中程度の運動</div>
+            <div class="activity-desc">週3〜5日</div>
+            <div class="activity-kcal" id="act-2">—</div>
+            <div style="font-size:0.7rem;color:#aaa">kcal</div>
+          </div>
+          <div class="activity-card" onclick="selectActivity(this, 1.725)">
+            <div class="activity-name">ハードな運動</div>
+            <div class="activity-desc">週6〜7日</div>
+            <div class="activity-kcal" id="act-3">—</div>
+            <div style="font-size:0.7rem;color:#aaa">kcal</div>
+          </div>
+        </div>
+
+        <!-- ダイエット目標カロリー -->
+        <h2 class="section-title">ダイエット目標カロリーの目安</h2>
+        <table class="diet-table">
+          <thead>
+            <tr>
+              <th>目標</th>
+              <th>1日の目標カロリー</th>
+              <th>1ヶ月の変化目安</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="tag tag-maintain">現状維持</span></td>
+              <td><span class="diet-kcal" id="diet-maintain">—</span> kcal</td>
+              <td>±0 kg</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-slow">緩やかに痩せる</span></td>
+              <td><span class="diet-kcal" id="diet-slow">—</span> kcal</td>
+              <td>約 -1 kg / 月</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag-standard">しっかり痩せる</span></td>
+              <td><span class="diet-kcal" id="diet-standard">—</span> kcal</td>
+              <td>約 -2 kg / 月</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p style="font-size:0.78rem;color:#aaa;margin-top:-12px;">※ 基礎代謝を下回るカロリー制限は健康に悪影響を与える可能性があります。無理のない範囲で取り組みましょう。</p>
+      </div>
+
+      <!-- AdSense -->
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-2695760144989493"
+           data-ad-slot="auto"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+
+      <!-- 解説 -->
+      <div class="info-box">
+        <h3>基礎代謝（BMR）とは？</h3>
+        何もしなくても生命維持のために消費されるカロリーのことです。呼吸・体温調節・内臓の働きなど、安静にしているだけで消費されます。加齢とともに低下するため、同じ食事量でも太りやすくなる原因のひとつです。
+      </div>
+      <div class="info-box">
+        <h3>計算式について</h3>
+        このツールは精度の高い「ミフリン・セントジョー式」を使用しています。<br>
+        男性：10×体重(kg) + 6.25×身長(cm) − 5×年齢 + 5<br>
+        女性：10×体重(kg) + 6.25×身長(cm) − 5×年齢 − 161
+      </div>
+
+      <!-- 関連ツール -->
+      <h2 class="section-title">関連ツール</h2>
+      <div class="tool-links">
+        <a href="/" class="tool-link">
+          <span class="tool-link-label">食事管理に</span>
+          カロリー計算ツール
+        </a>
+        <a href="/bmi.html" class="tool-link">
+          <span class="tool-link-label">体格チェックに</span>
+          BMI計算ツール
+        </a>
+        <a href="/escape/" class="tool-link">
+          <span class="tool-link-label">息抜きに</span>
+          脱出ゲーム
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2026 life-calc14.com</p>
+    <a href="/privacy.html">プライバシーポリシー</a>
+  </footer>
+
+  <script>
+    let gender = 'male';
+    let currentTDEE = 0;
+
+    function setGender(g) {
+      gender = g;
+      document.getElementById('btn-male').className = 'gender-btn' + (g === 'male' ? ' active-male' : '');
+      document.getElementById('btn-female').className = 'gender-btn' + (g === 'female' ? ' active-female' : '');
+    }
+
+    function calculate() {
+      const age    = parseFloat(document.getElementById('age').value);
+      const height = parseFloat(document.getElementById('height').value);
+      const weight = parseFloat(document.getElementById('weight').value);
+      const errEl  = document.getElementById('error-msg');
+
+      if (!age || !height || !weight || age < 10 || age > 100 || height < 100 || height > 250 || weight < 20 || weight > 300) {
+        errEl.textContent = '年齢・身長・体重を正しく入力してください。';
+        return;
+      }
+      errEl.textContent = '';
+
+      // Mifflin-St Jeor
+      const bmr = Math.round(10 * weight + 6.25 * height - 5 * age + (gender === 'male' ? 5 : -161));
+
+      document.getElementById('bmr-value').textContent = bmr.toLocaleString();
+      document.getElementById('bmr-sub').textContent =
+        `${gender === 'male' ? '男性' : '女性'} / ${age}歳 / ${height}cm / ${weight}kg`;
+
+      // 活動量別TDEE
+      const multipliers = [1.2, 1.375, 1.55, 1.725];
+      multipliers.forEach((m, i) => {
+        document.getElementById('act-' + i).textContent = Math.round(bmr * m).toLocaleString();
+      });
+
+      // 最初の活動量（ほぼ運動なし）でダイエット表を更新
+      updateDietTable(Math.round(bmr * 1.2));
+
+      // 活動カード選択をリセット
+      document.querySelectorAll('.activity-card').forEach((el, i) => {
+        el.className = 'activity-card' + (i === 0 ? ' selected' : '');
+      });
+
+      document.getElementById('result-section').style.display = 'block';
+      document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function selectActivity(el, multiplier) {
+      document.querySelectorAll('.activity-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      const bmr = parseFloat(document.getElementById('bmr-value').textContent.replace(/,/g, ''));
+      updateDietTable(Math.round(bmr * multiplier));
+    }
+
+    function updateDietTable(tdee) {
+      document.getElementById('diet-maintain').textContent  = tdee.toLocaleString();
+      document.getElementById('diet-slow').textContent      = Math.max(1200, tdee - 500).toLocaleString();
+      document.getElementById('diet-standard').textContent  = Math.max(1200, tdee - 750).toLocaleString();
+    }
+
+    // Enterキー対応
+    ['age', 'height', 'weight'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') calculate();
+      });
+    });
+  </script>
+</body>
+</html>
