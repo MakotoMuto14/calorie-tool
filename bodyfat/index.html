@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>体脂肪率計算ツール | 年齢・BMIから無料で簡単推定</title>
+  <meta name="description" content="性別・年齢・身長・体重を入力するだけで体脂肪率を推定。理想の体脂肪率との比較や、判定・アドバイスもわかる無料ツール。" />
+  <link rel="stylesheet" href="../style.css" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-09VDQ8K3P7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-09VDQ8K3P7');
+  </script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2695760144989493"
+     crossorigin="anonymous"></script>
+  <style>
+    .gender-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .gender-btn {
+      flex: 1;
+      padding: 14px;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      background: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #555;
+    }
+    .gender-btn.active-male   { border-color: #2196f3; background: #e3f2fd; color: #1565c0; }
+    .gender-btn.active-female { border-color: #e91e63; background: #fce4ec; color: #880e4f; }
+
+    .result-card {
+      border-radius: 20px;
+      padding: 36px 24px;
+      text-align: center;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .result-card.low      { background: linear-gradient(135deg, #42a5f5, #1565c0); }
+    .result-card.normal   { background: linear-gradient(135deg, #66bb6a, #2e7d32); }
+    .result-card.high     { background: linear-gradient(135deg, #ffa726, #e65100); }
+    .result-card.very-high{ background: linear-gradient(135deg, #ef5350, #b71c1c); }
+
+    .result-label { font-size: 0.9rem; opacity: 0.85; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .result-value { font-size: 4.5rem; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+    .result-unit  { font-size: 1.1rem; opacity: 0.85; }
+    .result-judge {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 6px 22px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.25);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .gauge-wrap {
+      margin: 8px 0 4px;
+      position: relative;
+    }
+    .gauge-bar {
+      height: 18px;
+      border-radius: 999px;
+      background: linear-gradient(to right, #42a5f5 0%, #66bb6a 30%, #ffa726 65%, #ef5350 100%);
+    }
+    .gauge-marker {
+      position: absolute;
+      top: -7px;
+      width: 4px;
+      height: 32px;
+      background: #1a1a1a;
+      border-radius: 2px;
+      transform: translateX(-50%);
+      transition: left 0.6s ease;
+    }
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: #aaa;
+      margin-top: 6px;
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+    }
+    .compare-table th {
+      background: #f0f0ff;
+      color: #555;
+      font-size: 0.8rem;
+      padding: 10px 12px;
+      text-align: left;
+    }
+    .compare-table td {
+      padding: 11px 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 0.88rem;
+    }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr.highlight td { background: #f0fff0; font-weight: 700; }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .tag-low       { background: #e3f2fd; color: #1565c0; }
+    .tag-normal    { background: #e8f5e9; color: #2e7d32; }
+    .tag-high      { background: #fff3e0; color: #e65100; }
+    .tag-very-high { background: #ffebee; color: #b71c1c; }
+
+    .advice-box {
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+    .advice-box.low       { background: #e3f2fd; border-left: 4px solid #2196f3; }
+    .advice-box.normal    { background: #e8f5e9; border-left: 4px solid #4caf50; }
+    .advice-box.high      { background: #fff3e0; border-left: 4px solid #ff9800; }
+    .advice-box.very-high { background: #ffebee; border-left: 4px solid #f44336; }
+    .advice-box h3 { font-size: 0.95rem; margin-bottom: 6px; }
+
+    .info-box {
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      font-size: 0.88rem;
+      color: #555;
+      line-height: 1.7;
+    }
+    .info-box h3 { font-size: 0.95rem; color: #333; margin-bottom: 8px; }
+
+    .tool-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+    .tool-link {
+      flex: 1;
+      min-width: 140px;
+      display: block;
+      padding: 14px 16px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      text-align: center;
+      text-decoration: none;
+      color: #333;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: 1px solid #eee;
+      transition: all 0.2s;
+    }
+    .tool-link:hover { background: #f0f0ff; border-color: #667eea; color: #667eea; }
+    .tool-link-label { font-size: 0.72rem; color: #999; display: block; margin-bottom: 4px; }
+
+    #result-section { display: none; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a href="/" class="site-logo">life-calc14</a>
+    <nav class="site-nav">
+      <a href="/">カロリー計算</a>
+      <a href="/bmi.html">BMI</a>
+      <a href="/bmr/">基礎代謝</a>
+      <a href="/bodyfat/" class="active">体脂肪率</a>
+      <a href="/escape/">脱出ゲーム</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1 class="page-title">体脂肪率計算ツール</h1>
+    <p class="page-desc">性別・年齢・身長・体重を入力するだけで体脂肪率を推定。あなたの体組成の目安と理想の数値がわかります。</p>
+
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-2695760144989493"
+         data-ad-slot="auto"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label">性別</label>
+        <div class="gender-row">
+          <button class="gender-btn active-male" id="btn-male" onclick="setGender('male')">男性</button>
+          <button class="gender-btn" id="btn-female" onclick="setGender('female')">女性</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="age">年齢</label>
+        <div class="input-row">
+          <input type="number" id="age" class="form-input" placeholder="例: 30" min="10" max="100" />
+          <span class="input-unit">歳</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="height">身長</label>
+        <div class="input-row">
+          <input type="number" id="height" class="form-input" placeholder="例: 165" min="100" max="250" />
+          <span class="input-unit">cm</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="weight">体重</label>
+        <div class="input-row">
+          <input type="number" id="weight" class="form-input" placeholder="例: 60" min="20" max="300" />
+          <span class="input-unit">kg</span>
+        </div>
+      </div>
+      <button class="btn-calc" onclick="calculate()">体脂肪率を計算する</button>
+      <p class="error-msg" id="error-msg"></p>
+    </div>
+
+    <div id="result-section">
+      <!-- メイン結果 -->
+      <div class="result-card" id="result-card">
+        <div class="result-label">推定体脂肪率</div>
+        <div class="result-value" id="bf-value">—</div>
+        <div class="result-unit">%</div>
+        <div class="result-judge" id="bf-judge">—</div>
+      </div>
+
+      <!-- ゲージ -->
+      <div class="card">
+        <h2 class="section-title">体脂肪率のレベル</h2>
+        <div class="gauge-wrap">
+          <div class="gauge-bar"></div>
+          <div class="gauge-marker" id="gauge-marker"></div>
+        </div>
+        <div class="gauge-labels">
+          <span>低い</span>
+          <span>標準</span>
+          <span>やや高い</span>
+          <span>高い</span>
+        </div>
+
+        <!-- 判定表 -->
+        <table class="compare-table" style="margin-top:20px;">
+          <thead>
+            <tr>
+              <th>判定</th>
+              <th>男性</th>
+              <th>女性</th>
+            </tr>
+          </thead>
+          <tbody id="compare-body"></tbody>
+        </table>
+        <p style="font-size:0.75rem;color:#aaa;margin-top:8px;">※ 日本肥満学会の基準を参考にしています</p>
+      </div>
+
+      <!-- アドバイス -->
+      <div class="advice-box" id="advice-box">
+        <h3 id="advice-title"></h3>
+        <p id="advice-text"></p>
+      </div>
+
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-2695760144989493"
+           data-ad-slot="auto"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+
+      <!-- 解説 -->
+      <div class="info-box">
+        <h3>計算方法について</h3>
+        BMI（体格指数）と年齢・性別を使ったDeurenberg式で推定しています。<br>
+        体脂肪率(%) = 1.20 × BMI + 0.23 × 年齢 − 10.8 × 性別係数 − 5.4<br>
+        ※ 男性：性別係数=1 / 女性：性別係数=0<br>
+        ※ 体組成計での実測値とは異なる場合があります。
+      </div>
+      <div class="info-box">
+        <h3>体脂肪率が高いと起こること</h3>
+        体脂肪が多すぎると、生活習慣病（糖尿病・高血圧・脂質異常症）のリスクが高まります。一方で低すぎても、ホルモンバランスの乱れや免疫力低下につながります。適切な範囲を維持することが大切です。
+      </div>
+
+      <h2 class="section-title">関連ツール</h2>
+      <div class="tool-links">
+        <a href="/bmr/" class="tool-link">
+          <span class="tool-link-label">カロリー管理に</span>
+          基礎代謝計算
+        </a>
+        <a href="/bmi.html" class="tool-link">
+          <span class="tool-link-label">体格チェックに</span>
+          BMI計算
+        </a>
+        <a href="/" class="tool-link">
+          <span class="tool-link-label">食事管理に</span>
+          カロリー計算
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2026 life-calc14.com</p>
+    <a href="/privacy.html">プライバシーポリシー</a>
+  </footer>
+
+  <script>
+    let gender = 'male';
+
+    function setGender(g) {
+      gender = g;
+      document.getElementById('btn-male').className   = 'gender-btn' + (g === 'male'   ? ' active-male'   : '');
+      document.getElementById('btn-female').className = 'gender-btn' + (g === 'female' ? ' active-female' : '');
+    }
+
+    // 判定基準 [label, tagClass, male範囲, female範囲]
+    const criteria = [
+      { label: '低い',     tag: 'tag-low',       male: '〜10%',   female: '〜20%',  mMax: 10, fMax: 20 },
+      { label: '標準',     tag: 'tag-normal',    male: '10〜20%', female: '20〜30%', mMax: 20, fMax: 30 },
+      { label: 'やや高い', tag: 'tag-high',      male: '20〜25%', female: '30〜35%', mMax: 25, fMax: 35 },
+      { label: '高い',     tag: 'tag-very-high', male: '25%〜',   female: '35%〜',   mMax: 999, fMax: 999 },
+    ];
+
+    const advice = {
+      low: {
+        cls: 'low',
+        title: '体脂肪率が低めです',
+        text: '体脂肪が少なすぎると、ホルモンバランスの乱れや免疫力低下につながることがあります。極端な食事制限は避け、バランスのよい食事と適度な筋力トレーニングを心がけましょう。'
+      },
+      normal: {
+        cls: 'normal',
+        title: '体脂肪率は標準範囲です',
+        text: '健康的な範囲内です。現在の食事・運動習慣を継続しましょう。筋肉量を維持するために、適度な運動と十分なたんぱく質摂取がおすすめです。'
+      },
+      high: {
+        cls: 'high',
+        title: '体脂肪率がやや高めです',
+        text: '生活習慣病のリスクが高まり始める範囲です。1日30分程度のウォーキングや軽い筋トレを取り入れ、揚げ物・甘い飲み物を控えることから始めましょう。'
+      },
+      'very-high': {
+        cls: 'very-high',
+        title: '体脂肪率が高い状態です',
+        text: '糖尿病・高血圧などのリスクが高まります。まずは食事の見直し（カロリー計算・糖質・脂質を意識）と、無理のない有酸素運動から始めることをおすすめします。'
+      }
+    };
+
+    function getJudge(bf, g) {
+      const limits = g === 'male'
+        ? [10, 20, 25]
+        : [20, 30, 35];
+      if (bf < limits[0]) return 'low';
+      if (bf < limits[1]) return 'normal';
+      if (bf < limits[2]) return 'high';
+      return 'very-high';
+    }
+
+    function calculate() {
+      const age    = parseFloat(document.getElementById('age').value);
+      const height = parseFloat(document.getElementById('height').value);
+      const weight = parseFloat(document.getElementById('weight').value);
+      const errEl  = document.getElementById('error-msg');
+
+      if (!age || !height || !weight || age < 10 || age > 100 || height < 100 || height > 250 || weight < 20 || weight > 300) {
+        errEl.textContent = '年齢・身長・体重を正しく入力してください。';
+        return;
+      }
+      errEl.textContent = '';
+
+      const bmi = weight / ((height / 100) ** 2);
+      const gCoeff = gender === 'male' ? 1 : 0;
+      const bf = Math.round((1.20 * bmi + 0.23 * age - 10.8 * gCoeff - 5.4) * 10) / 10;
+      const judge = getJudge(bf, gender);
+
+      // カード
+      const cardClasses = { low: 'low', normal: 'normal', high: 'high', 'very-high': 'very-high' };
+      const judgeLabels = { low: '低い', normal: '標準', high: 'やや高い', 'very-high': '高い' };
+      const card = document.getElementById('result-card');
+      card.className = 'result-card ' + cardClasses[judge];
+      document.getElementById('bf-value').textContent = bf;
+      document.getElementById('bf-judge').textContent = judgeLabels[judge];
+
+      // ゲージ（0〜50%を100%幅に）
+      const pct = Math.min(Math.max(bf / 50 * 100, 2), 98);
+      document.getElementById('gauge-marker').style.left = pct + '%';
+
+      // 比較表
+      const tbody = document.getElementById('compare-body');
+      tbody.innerHTML = criteria.map(c => {
+        const isCurrentMale   = gender === 'male'   && judgeLabels[judge] === c.label;
+        const isCurrentFemale = gender === 'female' && judgeLabels[judge] === c.label;
+        const hl = (isCurrentMale || isCurrentFemale) ? ' class="highlight"' : '';
+        return `<tr${hl}>
+          <td><span class="tag ${c.tag}">${c.label}</span></td>
+          <td>${c.male}${isCurrentMale ? ' ◀ あなた' : ''}</td>
+          <td>${c.female}${isCurrentFemale ? ' ◀ あなた' : ''}</td>
+        </tr>`;
+      }).join('');
+
+      // アドバイス
+      const adv = advice[judge];
+      const advBox = document.getElementById('advice-box');
+      advBox.className = 'advice-box ' + adv.cls;
+      document.getElementById('advice-title').textContent = adv.title;
+      document.getElementById('advice-text').textContent  = adv.text;
+
+      document.getElementById('result-section').style.display = 'block';
+      document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    ['age', 'height', 'weight'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') calculate();
+      });
+    });
+  </script>
+</body>
+</html>
